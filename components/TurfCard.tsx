@@ -48,7 +48,7 @@ export default function TurfCard({
           <div>
             <p className="text-gray-400 text-xs">Starting from</p>
             <p className="text-white font-bold text-lg">
-              ${price}<span className="text-sm font-normal text-gray-400">/hr</span>
+              ₹{price}<span className="text-sm font-normal text-gray-400">/hr</span>
             </p>
           </div>
           <button className="bg-primary hover:bg-primary-hover text-black px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 neon-glow-hover">

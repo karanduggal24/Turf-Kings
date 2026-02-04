@@ -3,7 +3,6 @@
 import { useTurfs } from '@/hooks/useTurfs';
 import TurfCard from './TurfCard';
 import { TurfCardProps } from '@/app/constants/types';
-import { useState, useRef, useEffect } from 'react';
 
 // Helper function to get sport icon
 const getSportIcon = (sportType: string): string => {
@@ -49,10 +48,10 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
           overscrollBehaviorX: 'contain'
         }}
       >
-        {turfs.map((turf, index) => (
+        {turfs.map((turf) => (
           <div 
             key={turf.id} 
-            className="flex-shrink-0 w-72 h-[420px]"
+            className="shrink-0 w-72 h-[420px]"
             style={{ 
               scrollSnapAlign: 'start'
             }}
@@ -61,7 +60,7 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
             <div className="w-full h-full">
               <div className="group bg-surface-dark rounded-2xl overflow-hidden hover:shadow-neon-lg transition-all duration-300 border border-surface-highlight hover:border-primary h-full flex flex-col">
                 {/* Image section - fixed height */}
-                <div className="relative aspect-4/3 w-full overflow-hidden flex-shrink-0">
+                <div className="relative aspect-4/3 w-full overflow-hidden shrink-0">
                   <div className="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 border border-surface-highlight">
                     <span className="material-symbols-outlined text-primary text-xs">{getSportIcon(turf.sport_type)}</span>
                     <span className="text-white text-xs font-bold uppercase tracking-wide">
@@ -79,89 +78,7 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
                 </div>
                 
                 {/* Content section - flexible but constrained */}
-                <div className="p-4 flex flex-col flex-grow min-h-0">
-                  {/* Title and location */}
-                  <div className="mb-3">
-                    <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{turf.name}</h3>
-                    <p className="text-gray-400 text-xs flex items-center gap-1 mt-1 line-clamp-1">
-                      <span className="material-symbols-outlined text-xs">near_me</span> 
-                      {turf.location}, {turf.city} • 2.5 km away
-                    </p>
-                  </div>
-                  
-                  {/* Amenities */}
-                  <div className="mb-4 flex items-center gap-1 overflow-hidden flex-wrap">
-                    {(turf.amenities?.slice(0, 2) || []).map((amenity: string, index: number) => (
-                      <span key={index} className="px-2 py-1 bg-surface-highlight rounded-md text-xs text-gray-300 font-medium border border-surface-highlight whitespace-nowrap">
-                        {amenity}
-                      </span>
-                    ))}
-                    {turf.amenities?.length > 2 && (
-                      <span className="text-xs text-gray-400">+{turf.amenities.length - 2}</span>
-                    )}
-                  </div>
-                  
-                  {/* Price and button - fixed at bottom */}
-                  <div className="pt-3 border-t border-surface-highlight flex items-center justify-between mt-auto">
-                    <div>
-                      <p className="text-gray-400 text-xs">Starting from</p>
-                      <p className="text-white font-bold text-sm">
-                        ₹{turf.price_per_hour}<span className="text-xs font-normal text-gray-400">/hr</span>
-                      </p>
-                    </div>
-                    <button className="bg-primary hover:bg-primary-hover text-black px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 neon-glow-hover">
-                      Book Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="relative">
-      {/* Carousel Container */}
-      <div 
-        ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide pb-8"
-        style={{ scrollSnapType: 'x mandatory' }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {turfs.map((turf, index) => (
-          <div 
-            key={turf.id} 
-            className="flex-shrink-0 w-72 h-[420px]"
-            style={{ scrollSnapAlign: 'start' }}
-          >
-            {/* Fixed size container for uniform cards */}
-            <div className="w-full h-full">
-              <div className="group bg-surface-dark rounded-2xl overflow-hidden hover:shadow-neon-lg transition-all duration-300 border border-surface-highlight hover:border-primary h-full flex flex-col">
-                {/* Image section - fixed height */}
-                <div className="relative aspect-4/3 w-full overflow-hidden flex-shrink-0">
-                  <div className="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 border border-surface-highlight">
-                    <span className="material-symbols-outlined text-primary text-xs">{getSportIcon(turf.sport_type)}</span>
-                    <span className="text-white text-xs font-bold uppercase tracking-wide">
-                      {turf.sport_type.charAt(0).toUpperCase() + turf.sport_type.slice(1)}
-                    </span>
-                  </div>
-                  <div 
-                    className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" 
-                    style={{ backgroundImage: `url('${turf.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800'}')` }}
-                  ></div>
-                  <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
-                    <span className="material-symbols-outlined text-yellow-400 text-xs">star</span>
-                    <span className="text-white text-xs font-bold">{turf.rating || 0}</span>
-                  </div>
-                </div>
-                
-                {/* Content section - flexible but constrained */}
-                <div className="p-4 flex flex-col flex-grow min-h-0">
+                <div className="p-4 flex flex-col grow min-h-0">
                   {/* Title and location */}
                   <div className="mb-3">
                     <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{turf.name}</h3>
@@ -224,10 +141,10 @@ export default function FeaturedSection() {
         <div className="md:hidden">
           <div className="flex gap-4 overflow-hidden pb-8">
             {[...Array(3)].map((_, index) => (
-              <div key={index} className="flex-shrink-0 w-72 h-[420px]">
+              <div key={index} className="shrink-0 w-72 h-[420px]">
                 <div className="bg-surface-dark rounded-2xl overflow-hidden border border-surface-highlight animate-pulse h-full flex flex-col">
-                  <div className="aspect-4/3 bg-surface-highlight flex-shrink-0"></div>
-                  <div className="p-4 flex flex-col flex-grow min-h-0">
+                  <div className="aspect-4/3 bg-surface-highlight shrink-0"></div>
+                  <div className="p-4 flex flex-col grow min-h-0">
                     <div className="mb-3">
                       <div className="h-4 bg-surface-highlight rounded mb-2"></div>
                       <div className="h-3 bg-surface-highlight rounded w-3/4"></div>

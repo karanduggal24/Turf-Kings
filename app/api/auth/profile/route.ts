@@ -41,9 +41,17 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
+    // Create a clean update object with only allowed fields
+    const userUpdateData = {
+      ...(updateData.full_name !== undefined && { full_name: updateData.full_name }),
+      ...(updateData.phone !== undefined && { phone: updateData.phone }),
+      ...(updateData.avatar_url !== undefined && { avatar_url: updateData.avatar_url }),
+      updated_at: new Date().toISOString()
+    }
+
     const { data: user, error } = await supabase
       .from('users')
-      .update(updateData)
+      .update(userUpdateData as any) // Type assertion to bypass strict typing
       .eq('id', user_id)
       .select()
       .single()

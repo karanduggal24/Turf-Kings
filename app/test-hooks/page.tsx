@@ -21,7 +21,11 @@ export default function TestHooks() {
   const handleSignUp = async () => {
     const { data, error } = await signUp('test@example.com', 'password123', 'Test User');
     if (error) {
-      alert('Sign up failed: ' + error.message);
+      // Handle both Supabase errors and generic errors
+      const errorMessage = error && typeof error === 'object' && 'message' in error 
+        ? (error as any).message 
+        : 'An error occurred during sign up';
+      alert('Sign up failed: ' + errorMessage);
     } else {
       alert('Sign up successful! Check your email for confirmation.');
     }

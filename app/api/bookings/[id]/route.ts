@@ -3,9 +3,10 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = createServerSupabaseClient()
+  const { id } = await params
   
   try {
     const { data: booking, error } = await supabase
@@ -15,7 +16,7 @@ export async function GET(
         turf:turfs(name, location, city, images, price_per_hour),
         user:users(full_name, email, phone)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (error) {
@@ -33,16 +34,17 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = createServerSupabaseClient()
+  const { id } = await params
   
   try {
     const body = await request.json()
     const { data: booking, error } = await supabase
       .from('bookings')
       .update(body)
-      .eq('id', params.id)
+      .eq('id', id)
       .select(`
         *,
         turf:turfs(name, location, city),
@@ -65,15 +67,16 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = createServerSupabaseClient()
+  const { id } = await params
   
   try {
     const { data: booking, error } = await supabase
       .from('bookings')
       .update({ status: 'cancelled' })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 

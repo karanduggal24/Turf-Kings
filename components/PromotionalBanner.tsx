@@ -7,33 +7,46 @@ export default function PromotionalBanner() {
 
   return (
     <section className="py-16 px-4 md:px-10 lg:px-20 max-w-[1440px] mx-auto w-full bg-black">
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 neon-glow">
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-primary/25 to-primary/5 border border-primary/40 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 neon-glow">
+        
+        {/* Ad Content */}
         <div className="flex-1 space-y-6 text-center md:text-left z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">Join the League</h2>
-          <p className="text-gray-300 max-w-md text-lg leading-relaxed">
-            Sign up now and get 20% off your first 3 bookings. Host tournaments and track your stats.
+          <div className="inline-block px-4 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold tracking-widest uppercase">
+            Limited Time Offer
+          </div>
+          <h2 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
+            Level Up Your <span className="text-primary">Game Play.</span>
+          </h2>
+          <p className="text-gray-300 max-w-md text-lg md:text-xl leading-relaxed">
+            Don't just play—dominate. Book your next 3 sessions now and <span className="text-white font-bold underline decoration-primary">save 20% instantly.</span> 
           </p>
-          <button className="mt-6 bg-primary text-black hover:bg-primary-hover px-8 py-4 rounded-2xl font-bold transition-all duration-300 inline-flex items-center gap-3 text-lg neon-glow-hover">
-            Get Started 
-            <span className="material-symbols-outlined">arrow_forward</span>
+          <button className="mt-4 bg-primary text-black hover:scale-105 active:scale-95 px-10 py-5 rounded-2xl font-black transition-all duration-300 inline-flex items-center gap-3 text-xl shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)]">
+            CLAIM DISCOUNT
+            <span className="material-symbols-outlined font-bold">bolt</span>
           </button>
         </div>
         
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l from-primary/30 to-transparent pointer-events-none"></div>
+        {/* Visual Flair */}
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-primary/20 to-transparent pointer-events-none hidden md:block"></div>
         
-        <div className="flex -space-x-4 z-10">
-          {avatarUrls.map((url, index) => (
-            <img 
-              key={index}
-              alt={`Player avatar ${index + 1}`}
-              className="w-16 h-16 rounded-full border-4 border-black shadow-lg" 
-              src={url}
-            />
-          ))}
-          <div className="w-16 h-16 rounded-full border-4 border-black bg-surface-dark flex items-center justify-center text-sm font-bold text-primary shadow-lg">
-            +2k
+        {/* Social Proof / Trust Section */}
+        <div className="flex flex-col items-center gap-4 z-10">
+          <div className="flex -space-x-4">
+            {avatarUrls.map((url, index) => (
+              <img 
+                key={index}
+                alt={`User ${index + 1}`}
+                className="w-16 h-16 rounded-full border-4 border-black shadow-2xl transition-transform hover:-translate-y-2" 
+                src={url}
+              />
+            ))}
+            <div className="w-16 h-16 rounded-full border-4 border-black bg-zinc-900 flex items-center justify-center text-sm font-black text-primary shadow-2xl">
+              +5k
+            </div>
           </div>
+          <p className="text-primary font-medium text-sm tracking-tighter">TRUSTED BY 5,000+ PLAYERS</p>
         </div>
+
       </div>
     </section>
   );

@@ -59,10 +59,10 @@ A modern, full-stack turf booking platform built with Next.js 15, TypeScript, Su
 │   ├── AnimatedText.tsx    # Text animations
 │   ├── AuthModal.tsx       # Authentication modal
 │   └── Footer.tsx          # Footer component
-├── hooks/
-│   ├── useAuth.ts          # Authentication hook
-│   ├── useTurfs.ts         # Turf data management
-│   └── useBookings.ts      # Booking operations
+├── stores/
+│   ├── authStore.ts        # Zustand authentication store
+│   ├── turfsStore.ts       # Zustand turfs management store
+│   └── bookingsStore.ts    # Zustand bookings store
 ├── lib/
 │   ├── supabase.ts         # Supabase client
 │   ├── database.types.ts   # TypeScript types
@@ -188,47 +188,75 @@ PUT    /api/auth/profile       # Update user profile
 
 ---
 
-## 🎣 React Hooks
+## 🏪 Zustand State Management
 
-### **Authentication**
+### **Authentication Store**
 ```tsx
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/stores/authStore'
 
 function MyComponent() {
-  const { user, loading, signIn, signUp, signOut } = useAuth()
+  const { user, loading, signIn, signUp, signOut, initialize } = useAuthStore()
   
   const handleSignUp = async () => {
     const { data, error } = await signUp('user@example.com', 'password', 'Full Name')
   }
+  
+  // Initialize auth on app start
+  useEffect(() => {
+    initialize()
+  }, [initialize])
 }
 ```
 
-### **Turfs Management**
+### **Turfs Store**
 ```tsx
-import { useTurfs, useTurf } from '@/hooks/useTurfs'
+import { useTurfsStore } from '@/stores/turfsStore'
 
 function TurfsList() {
-  // Get all turfs with filters
-  const { turfs, loading, error } = useTurfs({
-    city: 'Mumbai',
-    sport: 'cricket',
-    page: 1,
-    limit: 10
-  })
+  const { 
+    turfs, 
+    loading, 
+    error, 
+    pagination,
+    fetchTurfs, 
+    fetchTurfById,
+    setFilters 
+  } = useTurfsStore()
+  
+  // Fetch turfs with filters
+  useEffect(() => {
+    fetchTurfs({
+      city: 'Mumbai',
+      sport: 'cricket',
+      page: 1,
+      limit: 10
+    })
+  }, [fetchTurfs])
   
   // Get single turf
-  const { turf } = useTurf('turf-id')
+  const handleGetTurf = async (id: string) => {
+    const turf = await fetchTurfById(id)
+  }
 }
 ```
 
-### **Booking Operations**
+### **Bookings Store**
 ```tsx
-import { useBookings } from '@/hooks/useBookings'
+import { useBookingsStore } from '@/stores/bookingsStore'
 
 function MyBookings() {
-  const { bookings, createBooking, cancelBooking } = useBookings({
-    user_id: user?.id
-  })
+  const { 
+    bookings, 
+    loading,
+    fetchBookings,
+    createBooking, 
+    cancelBooking 
+  } = useBookingsStore()
+  
+  // Fetch user bookings
+  useEffect(() => {
+    fetchBookings({ user_id: user?.id })
+  }, [fetchBookings, user?.id])
   
   const handleBooking = async () => {
     await createBooking({
@@ -370,7 +398,7 @@ Your project is optimized for Vercel deployment with unnecessary files excluded 
 ```
 ├── app/                    # Next.js app directory
 ├── components/             # React components
-├── hooks/                  # Custom React hooks
+├── stores/                 # Zustand state management stores
 ├── lib/                    # Utilities and configurations
 ├── public/                 # Static assets
 ├── supabase/schema.sql     # Database schema (for reference)

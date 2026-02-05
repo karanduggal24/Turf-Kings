@@ -1,14 +1,19 @@
 'use client';
 
-import { useTurfs } from '@/hooks/useTurfs';
-import { useState } from 'react';
+import { useTurfsStore } from '@/stores/turfsStore';
+import { useState, useEffect } from 'react';
 
 export default function TestSports() {
   const [selectedSport, setSelectedSport] = useState('');
-  const { turfs, loading, error } = useTurfs({
-    sport: selectedSport || undefined,
-    limit: 10
-  });
+  const { turfs, loading, error, fetchTurfs } = useTurfsStore();
+
+  // Fetch turfs when sport filter changes
+  useEffect(() => {
+    fetchTurfs({
+      sport: selectedSport || undefined,
+      limit: 10
+    });
+  }, [selectedSport, fetchTurfs]);
 
   const sports = [
     { value: '', label: 'All Sports', icon: 'sports' },
@@ -85,9 +90,9 @@ export default function TestSports() {
         </div>
 
         <div className="mt-8 p-4 bg-surface-highlight rounded border-l-4 border-primary">
-          <h4 className="font-semibold mb-2">✅ Basketball → Badminton Update Complete!</h4>
+          <h4 className="font-semibold mb-2">✅ Zustand Store Integration Complete!</h4>
           <p className="text-sm text-gray-300">
-            The system now supports badminton instead of basketball. All types, hooks, and components have been updated.
+            The system now uses Zustand for state management with badminton support. All stores and components have been updated.
           </p>
         </div>
       </div>

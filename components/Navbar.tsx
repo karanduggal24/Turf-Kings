@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { user, loading, signOut } = useAuthStore();
 
   const toggleMenu = () => {
     if (isAnimating) return;
@@ -16,6 +18,11 @@ export default function Navbar() {
     setTimeout(() => {
       setIsAnimating(false);
     }, 300);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
   };
 
   // Close menu on escape key
@@ -61,9 +68,27 @@ export default function Navbar() {
         </div>
 
         {/* Desktop CTA Button */}
-        <button className="hidden md:flex cursor-pointer items-center justify-center rounded-full bg-primary hover:bg-primary-hover transition-all duration-300 hover:scale-105 px-8 py-3 text-black text-base font-bold neon-glow-hover">
-          Login / Sign Up
-        </button>
+        {loading ? (
+          <div className="hidden md:flex items-center justify-center w-32 h-12 bg-surface-highlight rounded-full animate-pulse">
+            <div className="w-4 h-4 bg-gray-400 rounded-full animate-pulse"></div>
+          </div>
+        ) : user ? (
+          <div className="hidden md:flex items-center gap-4">
+            <span className="text-gray-300 text-sm">
+              Welcome, {user.user_metadata?.full_name || user.email}
+            </span>
+            <button 
+              onClick={handleSignOut}
+              className="cursor-pointer items-center justify-center rounded-full bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 px-6 py-2 text-white text-sm font-bold"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <button className="hidden md:flex cursor-pointer items-center justify-center rounded-full bg-primary hover:bg-primary-hover transition-all duration-300 hover:scale-105 px-8 py-3 text-black text-base font-bold neon-glow-hover">
+            Login / Sign Up
+          </button>
+        )}
 
         {/* Mobile Menu Button */}
         <button 
@@ -124,6 +149,14 @@ export default function Navbar() {
           >
             Login / Sign Up
           </button>
+          {user && (
+            <button 
+              onClick={handleSignOut}
+              className="w-full mt-2 bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105"
+            >
+              Sign Out
+            </button>
+          )}
         </div>
       </div>
     </nav>

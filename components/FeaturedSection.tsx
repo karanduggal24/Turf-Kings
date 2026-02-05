@@ -1,6 +1,7 @@
 'use client';
 
-import { useTurfs } from '@/hooks/useTurfs';
+import { useEffect } from 'react';
+import { useTurfsStore } from '@/stores/turfsStore';
 import TurfCard from './TurfCard';
 import { TurfCardProps } from '@/app/constants/types';
 
@@ -123,9 +124,13 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
 }
 
 export default function FeaturedSection() {
-  const { turfs, loading, error } = useTurfs({ 
-    limit: 8 // Show more turfs for better carousel experience
-  });
+  // Use Zustand store instead of custom hook
+  const { turfs, loading, error, fetchTurfs } = useTurfsStore()
+
+  useEffect(() => {
+    // Fetch turfs on component mount
+    fetchTurfs({ limit: 8 })
+  }, [fetchTurfs])
 
   if (loading) {
     return (

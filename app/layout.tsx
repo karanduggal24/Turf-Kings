@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import StoreInitializer from "@/components/StoreInitializer";
 
 export const metadata: Metadata = {
   title: "TurfKings - Turf Booking Platform",
@@ -28,6 +29,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-black min-h-screen text-white font-display overflow-x-hidden selection:bg-neon-green selection:text-black" suppressHydrationWarning={true}>
+        <StoreInitializer />
         {children}
       </body>
     </html>

@@ -1,31 +1,30 @@
 'use client';
 
-import { useTurfs } from '@/hooks/useTurfs';
-import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
+import { useTurfsStore } from '@/stores/turfsStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useState, useEffect } from 'react';
 
 export default function TestHooks() {
   const [city, setCity] = useState('');
   const [sport, setSport] = useState('');
   
-  // Test useTurfs hook
-  const { turfs, loading, error, pagination } = useTurfs({
-    city: city || undefined,
-    sport: sport || undefined,
-    limit: 5
-  });
+  // Test Zustand stores
+  const { turfs, loading, error, pagination, fetchTurfs } = useTurfsStore();
+  const { user, loading: authLoading, signUp } = useAuthStore();
 
-  // Test useAuth hook
-  const { user, loading: authLoading, signUp, signIn } = useAuth();
+  // Fetch turfs when filters change
+  useEffect(() => {
+    fetchTurfs({
+      city: city || undefined,
+      sport: sport || undefined,
+      limit: 5
+    });
+  }, [city, sport, fetchTurfs]);
 
   const handleSignUp = async () => {
     const { data, error } = await signUp('test@example.com', 'password123', 'Test User');
     if (error) {
-      // Handle both Supabase errors and generic errors
-      const errorMessage = error && typeof error === 'object' && 'message' in error 
-        ? (error as any).message 
-        : 'An error occurred during sign up';
-      alert('Sign up failed: ' + errorMessage);
+      alert('Sign up failed: ' + error.message);
     } else {
       alert('Sign up successful! Check your email for confirmation.');
     }
@@ -121,9 +120,9 @@ export default function TestHooks() {
         </div>
 
         <div className="mt-8 p-4 bg-surface-highlight rounded border-l-4 border-primary">
-          <h4 className="font-semibold mb-2">✅ Hooks Working!</h4>
+          <h4 className="font-semibold mb-2">✅ Zustand Stores Working!</h4>
           <p className="text-sm text-gray-300">
-            Both useAuth and useTurfs hooks are functioning correctly. 
+            Both authStore and turfsStore are functioning correctly with Zustand state management. 
             You can now use them in your components throughout the app.
           </p>
         </div>

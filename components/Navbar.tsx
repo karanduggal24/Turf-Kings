@@ -42,7 +42,7 @@ export default function Navbar() {
       <div className="px-4 md:px-10 lg:px-20 flex items-center justify-between max-w-[1440px] mx-auto w-full">
         {/* Logo Section - Properly Centered */}
         <div className="flex items-center justify-start">
-  <div className="w-40 h-16 md:w-48 md:h-20 flex items-center justify-center">
+  <div className="w-30 h-16 md:w-48 md:h-20 flex items-center justify-center">
     <img 
       src="/Dark-Logo.svg" 
       alt="TurfKings Logo" 

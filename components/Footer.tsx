@@ -18,10 +18,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center neon-glow">
+              {/* <div className="w-8 h-8 rounded-full flex items-center justify-center neon-glow">
                 <span className="material-symbols-outlined text-primary text-xl">sports_soccer</span>
-              </div>
-              <h4 className="text-white text-lg font-bold uppercase">PLAYGROUND</h4>
+              </div> */}
+               <img 
+      src="/Dark-Logo.svg" 
+      alt="TurfKings Logo" 
+      className="w-[100px] h-[100px]"
+    />
+              {/* <h4 className="text-white text-lg font-bold uppercase">PLAYGROUND</h4> */}
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               The ultimate platform for sports enthusiasts to discover and book premium turfs instantly.

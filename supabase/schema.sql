@@ -8,7 +8,7 @@ CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed', 'refunded');
 
 -- Users table (extends Supabase auth.users)
 CREATE TABLE users (
-  id UUID REFERENCES auth.users(id) PRIMARY KEY,
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
   phone TEXT,
@@ -124,7 +124,39 @@ CREATE POLICY "Users can create reviews for their bookings" ON reviews
     )
   );
 
--- Functions to update ratings
+-- Function to automatically create user profile after email verification
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Only create profile if email is confirmed
+  IF NEW.email_confirmed_at IS NOT NULL THEN
+    INSERT INTO public.users (id, email, full_name)
+    VALUES (
+      NEW.id,
+      NEW.email,
+      NEW.raw_user_meta_data->>'full_name'
+    )
+    ON CONFLICT (id) DO NOTHING; -- Prevent duplicates
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to create user profile on signup (if email already confirmed)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Trigger to create user profile when email is verified
+DROP TRIGGER IF EXISTS on_auth_user_verified ON auth.users;
+CREATE TRIGGER on_auth_user_verified
+  AFTER UPDATE ON auth.users
+  FOR EACH ROW
+  WHEN (OLD.email_confirmed_at IS NULL AND NEW.email_confirmed_at IS NOT NULL)
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- Function to update turf ratings
 CREATE OR REPLACE FUNCTION update_turf_rating()
 RETURNS TRIGGER AS $$
 BEGIN

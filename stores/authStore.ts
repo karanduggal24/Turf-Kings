@@ -8,9 +8,9 @@ export const useAuthStore = create<AuthState>()(
   devtools(
     persist(
       (set) => ({
-        // Initial state - start with loading false (server will provide initial user)
+        // Initial state
         user: null,
-        loading: false, // Changed from true to false
+        loading: false,
         error: null,
 
         // Actions
@@ -114,17 +114,15 @@ export const useAuthStore = create<AuthState>()(
         },
 
         initialize: async () => {
-          // Don't set loading if user is already set (from server)
           const currentUser = useAuthStore.getState().user
           if (!currentUser) {
             set({ loading: true }, false, 'initialize/start')
           }
           
           try {
-            // Get initial session (might be redundant if server already provided it)
+            // Get initial session
             const { data: { session } } = await supabase.auth.getSession()
             
-            // Only update if different from current state
             const newUser = session?.user ?? null
             if (JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
               set({ user: newUser }, false, 'initialize/session')
@@ -134,20 +132,6 @@ export const useAuthStore = create<AuthState>()(
             supabase.auth.onAuthStateChange(async (event, session) => {
               const user = session?.user ?? null
               set({ user, loading: false }, false, `authStateChange/${event}`)
-
-              // Create user profile if signing up
-              if (String(event) === 'SIGNED_UP' && session?.user) {
-                try {
-                  await supabase.from('users').insert({
-                    id: session.user.id,
-                    email: session.user.email!,
-                    full_name: session.user.user_metadata?.full_name || null,
-                  })
-                } catch (error) {
-                  console.error('Error creating user profile:', error)
-                  set({ error: 'Failed to create user profile' }, false, 'createProfile/error')
-                }
-              }
             })
 
             set({ loading: false }, false, 'initialize/complete')
@@ -164,7 +148,6 @@ export const useAuthStore = create<AuthState>()(
         name: AUTH_STORE_CONFIG.persistName,
         partialize: (state) => ({ 
           user: state.user 
-          // Don't persist loading or error states
         }),
       }
     ),

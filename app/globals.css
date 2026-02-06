@@ -130,6 +130,10 @@ body {
   animation: fade-in 1s ease-out forwards;
 }
 
+.animate-fadeIn {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
 .animate-slide-up {
   animation: slide-up 1s ease-out forwards;
 }
@@ -271,4 +275,32 @@ body {
   .carousel-card-footer {
     margin-top: auto;
   }
+}
+
+
+/* Custom Scrollbar Styles */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
+.scrollbar-track-surface-dark::-webkit-scrollbar-track {
+  background: var(--surface-dark);
+}
+
+.scrollbar-thumb-primary::-webkit-scrollbar-thumb {
+  background: var(--primary);
 }

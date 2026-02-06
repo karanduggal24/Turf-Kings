@@ -3,12 +3,10 @@ import HeroSection from '../components/HeroSection';
 import FeaturedSection from '../components/FeaturedSection';
 import PromotionalBanner from '../components/PromotionalBanner';
 import Footer from '../components/Footer';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 
-// Server Component - fetches data on server
 export default async function Home() {
-  // Fetch initial turfs on server for fast load + SEO
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   
   const { data: initialTurfs, error } = await supabase
     .from('turfs')

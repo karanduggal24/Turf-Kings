@@ -8,6 +8,7 @@ import Link from 'next/link';
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, loading, signOut } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
@@ -26,6 +27,13 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await signOut();
+    setIsMenuOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    router.push('/profile');
+    setIsProfileOpen(false);
     setIsMenuOpen(false);
   };
 
@@ -47,14 +55,28 @@ export default function Navbar() {
   // Close menu on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMenuOpen) {
-        toggleMenu();
+      if (e.key === 'Escape') {
+        if (isMenuOpen) toggleMenu();
+        if (isProfileOpen) setIsProfileOpen(false);
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isProfileOpen]);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (isProfileOpen && !target.closest('.profile-dropdown')) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileOpen]);
 
   return (
     <nav className="sticky top-0 z-70 bg-black/95 backdrop-blur-md border-b border-surface-highlight">
@@ -109,16 +131,55 @@ export default function Navbar() {
             </span>
           </div>
         ) : user ? (
-          <div className="hidden md:flex items-center gap-4">
-            <span className="text-gray-300 text-sm">
-              Welcome, {user.user_metadata?.full_name || user.email}
-            </span>
+          <div className="hidden md:flex items-center gap-4 relative profile-dropdown">
             <button 
-              onClick={handleSignOut}
-              className="cursor-pointer items-center justify-center rounded-full bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 px-6 py-2 text-white text-sm font-bold"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="flex items-center gap-3 cursor-pointer rounded-full bg-surface-highlight hover:bg-surface-highlight/80 transition-all duration-300 hover:scale-105 px-5 py-2.5 border border-primary/30 hover:border-primary"
             >
-              Sign Out
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-black font-bold text-sm">
+                {(user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase()}
+              </div>
+              <span className="text-white text-sm font-medium">
+                {user.user_metadata?.full_name || user.email?.split('@')[0]}
+              </span>
+              <span className={`material-symbols-outlined text-primary text-xl transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`}>
+                expand_more
+              </span>
             </button>
+
+            {/* Profile Dropdown */}
+            {isProfileOpen && (
+              <div className="absolute top-full right-0 mt-2 w-56 bg-surface-dark border border-surface-highlight rounded-xl shadow-2xl overflow-hidden z-50 animate-fadeIn">
+                <div className="p-4 border-b border-surface-highlight bg-black/40">
+                  <p className="text-white font-bold text-sm truncate">
+                    {user.user_metadata?.full_name || 'User'}
+                  </p>
+                  <p className="text-gray-400 text-xs truncate mt-1">
+                    {user.email}
+                  </p>
+                </div>
+                <div className="py-2">
+                  <button
+                    onClick={handleProfileClick}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-surface-highlight transition-all duration-200 text-sm"
+                  >
+                    <span className="material-symbols-outlined text-xl">
+                      account_circle
+                    </span>
+                    <span className="font-medium">My Profile</span>
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-sm"
+                  >
+                    <span className="material-symbols-outlined text-xl">
+                      logout
+                    </span>
+                    <span className="font-medium">Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <button 
@@ -191,12 +252,41 @@ export default function Navbar() {
               <span>Loading...</span>
             </div>
           ) : user ? (
-            <button 
-              onClick={handleSignOut}
-              className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105"
-            >
-              Sign Out
-            </button>
+            <div className="mt-6 space-y-3">
+              <div className="bg-surface-highlight rounded-lg p-4 border border-primary/30">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-black font-bold">
+                    {(user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-sm truncate">
+                      {user.user_metadata?.full_name || 'User'}
+                    </p>
+                    <p className="text-gray-400 text-xs truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={handleProfileClick}
+                className="w-full bg-primary hover:bg-primary-hover text-black px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-xl">
+                  account_circle
+                </span>
+                <span>My Profile</span>
+              </button>
+              <button 
+                onClick={handleSignOut}
+                className="w-full bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-xl">
+                  logout
+                </span>
+                <span>Sign Out</span>
+              </button>
+            </div>
           ) : (
             <button 
               onClick={handleMobileLoginClick}

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { searchParams } = new URL(request.url)
   
   const city = searchParams.get('city')
@@ -54,10 +54,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   
   try {
     const body = await request.json()
+    
     const {
       name,
       description,
@@ -70,6 +71,13 @@ export async function POST(request: NextRequest) {
       images,
       owner_id
     } = body
+
+    if (!name || !location || !city || !state || !price_per_hour || !sport_type || !owner_id) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
 
     const { data: turf, error } = await supabase
       .from('turfs')
@@ -95,7 +103,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ turf }, { status: 201 })
   } catch (error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

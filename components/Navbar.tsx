@@ -210,7 +210,7 @@ export default function Navbar() {
       <div 
         className={`md:hidden bg-surface-dark border-t border-surface-highlight transition-all duration-300 ease-out overflow-hidden ${
           isMenuOpen 
-            ? 'max-h-96 opacity-100 translate-y-0' 
+            ? 'max-h-[500px] opacity-100 translate-y-0' 
             : 'max-h-0 opacity-0 -translate-y-2'
         }`}
       >
@@ -253,21 +253,6 @@ export default function Navbar() {
             </div>
           ) : user ? (
             <div className="mt-6 space-y-3">
-              <div className="bg-surface-highlight rounded-lg p-4 border border-primary/30">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-black font-bold">
-                    {(user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-bold text-sm truncate">
-                      {user.user_metadata?.full_name || 'User'}
-                    </p>
-                    <p className="text-gray-400 text-xs truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
-              </div>
               <button 
                 onClick={handleProfileClick}
                 className="w-full bg-primary hover:bg-primary-hover text-black px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"

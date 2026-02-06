@@ -69,6 +69,9 @@ export const useTurfsStore = create<TurfsState>()(
             error: null
           }, false, 'fetchTurfs/success')
 
+          // Return data for component use
+          return data.turfs || []
+
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to fetch turfs'
           set({
@@ -76,6 +79,8 @@ export const useTurfsStore = create<TurfsState>()(
             loading: false,
             turfs: []
           }, false, 'fetchTurfs/error')
+          
+          return []
         }
       },
 

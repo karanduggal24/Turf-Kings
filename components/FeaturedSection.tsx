@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTurfsStore } from '@/stores/turfsStore';
 import TurfCard from './TurfCard';
 import { TurfCardProps } from '@/app/constants/types';
@@ -123,80 +123,48 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
   );
 }
 
-export default function FeaturedSection() {
-  // Use Zustand store instead of custom hook
-  const { turfs, loading, error, fetchTurfs } = useTurfsStore()
+interface FeaturedSectionProps {
+  initialTurfs: any[];
+  initialError: string | null;
+}
 
+export default function FeaturedSection({ initialTurfs, initialError }: FeaturedSectionProps) {
+  // Initialize with server data (no loading state on first render!)
+  const [turfs, setTurfs] = useState(initialTurfs);
+  const [currentError, setCurrentError] = useState(initialError);
+  const [isRefetching, setIsRefetching] = useState(false);
+  const { fetchTurfs } = useTurfsStore();
+
+  // Sync initial data with Zustand store
   useEffect(() => {
-    // Fetch turfs on component mount
-    fetchTurfs({ limit: 8 })
-  }, [fetchTurfs])
+    if (initialTurfs.length > 0) {
+      useTurfsStore.setState({ 
+        turfs: initialTurfs, 
+        loading: false, 
+        error: initialError 
+      });
+    }
+  }, [initialTurfs, initialError]);
 
-  if (loading) {
-    return (
-      <section className="py-20 px-4 md:px-10 lg:px-20 max-w-[1440px] mx-auto w-full bg-black">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-          <div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white">Featured Turfs</h2>
-            <p className="text-gray-400 mt-3 text-lg">Top rated grounds chosen by our community</p>
-          </div>
-        </div>
-        
-        {/* Mobile Loading */}
-        <div className="md:hidden">
-          <div className="flex gap-4 overflow-hidden pb-8">
-            {[...Array(3)].map((_, index) => (
-              <div key={index} className="shrink-0 w-72 h-[420px]">
-                <div className="bg-surface-dark rounded-2xl overflow-hidden border border-surface-highlight animate-pulse h-full flex flex-col">
-                  <div className="aspect-4/3 bg-surface-highlight shrink-0"></div>
-                  <div className="p-4 flex flex-col grow min-h-0">
-                    <div className="mb-3">
-                      <div className="h-4 bg-surface-highlight rounded mb-2"></div>
-                      <div className="h-3 bg-surface-highlight rounded w-3/4"></div>
-                    </div>
-                    <div className="mb-4 flex gap-2">
-                      <div className="h-6 bg-surface-highlight rounded w-16"></div>
-                      <div className="h-6 bg-surface-highlight rounded w-20"></div>
-                    </div>
-                    <div className="flex justify-between items-center pt-3 border-t border-surface-highlight mt-auto">
-                      <div className="space-y-1">
-                        <div className="h-3 bg-surface-highlight rounded w-16"></div>
-                        <div className="h-4 bg-surface-highlight rounded w-12"></div>
-                      </div>
-                      <div className="h-8 bg-surface-highlight rounded w-20"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+  // Function to refetch data (for filters, refresh, etc.)
+  const handleRefetch = async (filters?: any) => {
+    setIsRefetching(true);
+    setCurrentError(null);
 
-        {/* Desktop Loading */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[...Array(6)].map((_, index) => (
-            <div key={index} className="bg-surface-dark rounded-2xl overflow-hidden border border-surface-highlight animate-pulse">
-              <div className="aspect-4/3 bg-surface-highlight"></div>
-              <div className="p-6 space-y-4">
-                <div className="h-6 bg-surface-highlight rounded"></div>
-                <div className="h-4 bg-surface-highlight rounded w-3/4"></div>
-                <div className="flex gap-2">
-                  <div className="h-6 bg-surface-highlight rounded w-16"></div>
-                  <div className="h-6 bg-surface-highlight rounded w-20"></div>
-                </div>
-                <div className="flex justify-between items-center pt-4">
-                  <div className="h-8 bg-surface-highlight rounded w-20"></div>
-                  <div className="h-10 bg-surface-highlight rounded w-24"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
-  }
+    try {
+      await fetchTurfs(filters);
+      const state = useTurfsStore.getState();
+      setTurfs(state.turfs);
+      setCurrentError(state.error);
+    } catch (error) {
+      setCurrentError('Failed to fetch turfs');
+    } finally {
+      setIsRefetching(false);
+    }
+  };
 
-  if (error) {
+  // Show error if initial fetch failed
+  if (currentError && turfs.length === 0) {
     return (
       <section className="py-20 px-4 md:px-10 lg:px-20 max-w-[1440px] mx-auto w-full bg-black">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
@@ -208,7 +176,13 @@ export default function FeaturedSection() {
         
         <div className="text-center py-12">
           <p className="text-red-400 mb-4">❌ Failed to load turfs</p>
-          <p className="text-gray-400">{error}</p>
+          <p className="text-gray-400 mb-6">{currentError}</p>
+          <button 
+            onClick={() => handleRefetch()}
+            className="bg-primary hover:bg-primary-hover text-black px-6 py-3 rounded-lg font-bold transition-all duration-300"
+          >
+            Try Again
+          </button>
         </div>
       </section>
     );
@@ -221,10 +195,18 @@ export default function FeaturedSection() {
           <h2 className="text-4xl md:text-5xl font-bold text-white">Featured Turfs</h2>
           <p className="text-gray-400 mt-3 text-lg">Top rated grounds chosen by our community</p>
         </div>
-        <a className="text-primary hover:text-white font-medium flex items-center gap-2 transition-colors text-lg" href="#">
-          View all turfs
-          <span className="material-symbols-outlined">arrow_forward</span>
-        </a>
+        <div className="flex items-center gap-4">
+          {isRefetching && (
+            <span className="text-primary text-sm flex items-center gap-2">
+              <span className="animate-spin">⚡</span>
+              Updating...
+            </span>
+          )}
+          <a className="text-primary hover:text-white font-medium flex items-center gap-2 transition-colors text-lg" href="#">
+            View all turfs
+            <span className="material-symbols-outlined">arrow_forward</span>
+          </a>
+        </div>
       </div>
 
       {turfs.length === 0 ? (

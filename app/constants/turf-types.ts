@@ -49,7 +49,7 @@ export interface TurfsState {
   setError: (error: string | null) => void
   setPagination: (pagination: Pagination) => void
   setFilters: (filters: TurfParams) => void
-  fetchTurfs: (params?: TurfParams) => Promise<void>
+  fetchTurfs: (params?: TurfParams) => Promise<Turf[]>
   fetchTurfById: (id: string) => Promise<Turf | null>
   clearTurfs: () => void
   resetFilters: () => void

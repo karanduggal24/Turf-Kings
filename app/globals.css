@@ -194,6 +194,12 @@ body {
   box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
 }
 
+/* Mesh background pattern for auth pages */
+.bg-mesh {
+  background-image: radial-gradient(#1a2e18 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
+
 /* Ensure dark theme is always applied */
 .dark {
   color-scheme: dark;

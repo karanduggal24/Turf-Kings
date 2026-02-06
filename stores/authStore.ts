@@ -8,9 +8,9 @@ export const useAuthStore = create<AuthState>()(
   devtools(
     persist(
       (set) => ({
-        // Initial state
+        // Initial state - start with loading false (server will provide initial user)
         user: null,
-        loading: true,
+        loading: false, // Changed from true to false
         error: null,
 
         // Actions
@@ -114,12 +114,21 @@ export const useAuthStore = create<AuthState>()(
         },
 
         initialize: async () => {
-          set({ loading: true }, false, 'initialize/start')
+          // Don't set loading if user is already set (from server)
+          const currentUser = useAuthStore.getState().user
+          if (!currentUser) {
+            set({ loading: true }, false, 'initialize/start')
+          }
           
           try {
-            // Get initial session
+            // Get initial session (might be redundant if server already provided it)
             const { data: { session } } = await supabase.auth.getSession()
-            set({ user: session?.user ?? null }, false, 'initialize/session')
+            
+            // Only update if different from current state
+            const newUser = session?.user ?? null
+            if (JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
+              set({ user: newUser }, false, 'initialize/session')
+            }
 
             // Listen for auth changes
             supabase.auth.onAuthStateChange(async (event, session) => {
@@ -155,7 +164,8 @@ export const useAuthStore = create<AuthState>()(
         name: AUTH_STORE_CONFIG.persistName,
         partialize: (state) => ({ 
           user: state.user 
-        }), // Only persist user data
+          // Don't persist loading or error states
+        }),
       }
     ),
     {

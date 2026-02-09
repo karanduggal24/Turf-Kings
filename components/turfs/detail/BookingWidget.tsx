@@ -58,7 +58,9 @@ export default function BookingWidget({ turf }: BookingWidgetProps) {
       
       if (newSelection.length > 1 && !areSlotsConsecutive(newSelection)) {
         setShowWarning(true);
-        setTimeout(() => setShowWarning(false), 3000);
+        // setTimeout(() => {
+        //   setShowWarning(false)
+        // }, 3000);
         return prev;
       }
       

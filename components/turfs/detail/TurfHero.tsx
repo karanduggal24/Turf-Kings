@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Turf } from '@/app/constants/turf-types';
 
 interface TurfHeroProps {
@@ -12,6 +13,17 @@ export default function TurfHero({ turf }: TurfHeroProps) {
         style={{ backgroundImage: `url('${turf.images[0] || '/placeholder-turf.jpg'}')` }}
       >
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent"></div>
+      </div>
+      
+      {/* Back Button */}
+      <div className="absolute top-8 left-4 lg:left-20 z-10">
+        <Link 
+          href="/turfs"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl hover:border-primary hover:bg-black/80 transition-all group"
+        >
+          <span className="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          <span className="font-bold text-sm">Back</span>
+        </Link>
       </div>
       
       <div className="absolute bottom-0 left-0 w-full p-8 lg:px-20">

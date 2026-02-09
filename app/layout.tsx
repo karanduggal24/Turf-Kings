@@ -6,6 +6,13 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 export const metadata: Metadata = {
   title: "TurfKings - Turf Booking Platform",
   description: "Premium cricket and football grounds available near you. Experience the thrill under the lights.",
+  icons: {
+    icon: [
+      { url: '/Dark-Logo.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/Dark-Logo.svg',
+    apple: '/Dark-Logo.svg',
+  },
 };
 
 export default async function RootLayout({
@@ -21,7 +28,6 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <link rel="icon" href="/Dark-Logo.svg" type="image/svg+xml" />
         <link
           href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
@@ -34,7 +40,17 @@ export default async function RootLayout({
       <body className="bg-black min-h-screen text-white font-display overflow-x-hidden selection:bg-neon-green selection:text-black" suppressHydrationWarning={true}>
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.__INITIAL_USER__ = ${serializedUser};`,
+            __html: `
+              window.__INITIAL_USER__ = ${serializedUser};
+              // Disable scroll restoration and force instant scroll to top
+              if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+              }
+              // Force scroll to top immediately on page load
+              window.scrollTo(0, 0);
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+            `,
           }}
         />
         <StoreInitializer initialUser={initialUser} />

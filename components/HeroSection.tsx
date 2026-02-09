@@ -22,7 +22,7 @@ export default function HeroSection() {
 
       <div className="relative  flex flex-col items-center max-w-4xl w-full gap-8 text-center">
         <div className="space-y-6">
-          <AnimatedText animation='fadeIn' duration={1500} className="text-white text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+          <AnimatedText animation='fadeIn' duration={1500} className="text-white text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
             Own the Game.
             <br />
             <span className="text-primary drop-shadow-lg" style={{textShadow: '0 0 20px rgba(0, 255, 65, 0.5)'}}>Book Your Turf.</span>
@@ -59,17 +59,17 @@ export default function HeroSection() {
 
         {/* Sport Chips */}
         <div className="flex gap-4 flex-wrap justify-center">
-          <div className=" cursor-default group flex items-center gap-2 px-4 py-3 rounded-xl bg-surface-dark/80 hover:bg-primary hover:text-black border border-surface-highlight hover:border-primary transition-all duration-300 backdrop-blur-sm neon-glow-hover">
-            <span className="material-symbols-outlined text-primary group-hover:text-black">sports_cricket</span>
-            <span className="text-white group-hover:text-black font-medium text-sm">Cricket</span>
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-surface-dark/80 border border-surface-highlight backdrop-blur-sm select-none">
+            <span className="material-symbols-outlined text-primary">sports_cricket</span>
+            <span className="text-white font-medium text-sm">Cricket</span>
           </div>
-          <div className=" cursor-default group flex items-center gap-2 px-4 py-3 rounded-xl bg-surface-dark/80 hover:bg-primary hover:text-black border border-surface-highlight hover:border-primary transition-all duration-300 backdrop-blur-sm neon-glow-hover">
-            <span className="material-symbols-outlined text-primary group-hover:text-black">sports_soccer</span>
-            <span className="text-white group-hover:text-black font-medium text-sm">Football</span>
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-surface-dark/80 border border-surface-highlight backdrop-blur-sm select-none">
+            <span className="material-symbols-outlined text-primary">sports_soccer</span>
+            <span className="text-white font-medium text-sm">Football</span>
           </div>
-          <div className=" cursor-default group flex items-center gap-2 px-4 py-3 rounded-xl bg-surface-dark/80 hover:bg-primary hover:text-black border border-surface-highlight hover:border-primary transition-all duration-300 backdrop-blur-sm neon-glow-hover">
-            <span className="material-symbols-outlined text-primary group-hover:text-black">sports_tennis</span>
-            <span className="text-white group-hover:text-black font-medium text-sm">Badminton</span>
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-surface-dark/80 border border-surface-highlight backdrop-blur-sm select-none">
+            <span className="material-symbols-outlined text-primary">sports_tennis</span>
+            <span className="text-white font-medium text-sm">Badminton</span>
           </div>
         </div>
       </div>

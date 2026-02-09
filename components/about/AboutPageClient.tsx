@@ -11,7 +11,7 @@ export default function AboutPageClient() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative h-[70vh] min-h-[500px] w-full overflow-hidden">
+        <section className="relative w-full" style={{ height: 'calc(100vh - 80px)', minHeight: '600px' }}>
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{
@@ -21,7 +21,7 @@ export default function AboutPageClient() {
             <div className="absolute inset-0 bg-gradient-to-b from-background-dark/60 via-background-dark/80 to-background-dark" />
           </div>
 
-          <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 text-center py-20">
+          <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 text-center">
             <span className="mb-4 inline-block rounded-full bg-primary/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary border border-primary/30">
               Our Mission
             </span>
@@ -29,17 +29,15 @@ export default function AboutPageClient() {
               Elevating <br />
               <span className="text-primary">The Game</span>
             </h1>
-            <p className="max-w-2xl text-base sm:text-lg md:text-xl font-light leading-relaxed text-slate-300">
+            <p className="max-w-2xl text-base sm:text-lg md:text-xl font-light leading-relaxed text-slate-300 mb-10">
               Revolutionizing the way you book, play, and experience sports. We bring the stadium atmosphere to your fingertips, connecting athletes with premium facilities.
             </p>
-            <div className="mt-10">
-              <Link
-                href="/turfs"
-                className="inline-block rounded-lg bg-primary px-8 py-4 text-sm font-black uppercase tracking-widest text-background-dark shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
-              >
-                Book a Turf Now
-              </Link>
-            </div>
+            <Link
+              href="/turfs"
+              className="inline-block rounded-lg bg-primary px-8 py-4 text-sm font-black uppercase tracking-widest text-background-dark shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
+            >
+              Book a Turf Now
+            </Link>
           </div>
         </section>
 

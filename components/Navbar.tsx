@@ -111,8 +111,10 @@ export default function Navbar() {
             Turfs
           </Link>
           <Link 
-            href="#"
-            className="text-gray-300 text-base font-medium hover:text-primary transition-colors duration-200 hover:scale-105"
+            href="/about"
+            className={`text-base font-medium hover:text-primary transition-colors duration-200 hover:scale-105 ${
+              pathname === '/about' ? 'text-primary' : 'text-gray-300'
+            }`}
           >
             About
           </Link>
@@ -236,9 +238,11 @@ export default function Navbar() {
             Turfs
           </Link>
           <Link 
-            href="#"
+            href="/about"
             onClick={() => setIsMenuOpen(false)}
-            className="block text-gray-300 text-base font-medium hover:text-primary transition-all duration-200 py-3 px-4 rounded-lg hover:bg-surface-highlight transform hover:translate-x-2"
+            className={`block text-base font-medium hover:text-primary transition-all duration-200 py-3 px-4 rounded-lg hover:bg-surface-highlight transform hover:translate-x-2 ${
+              pathname === '/about' ? 'text-primary bg-surface-highlight' : 'text-gray-300'
+            }`}
           >
             About
           </Link>

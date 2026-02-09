@@ -103,8 +103,10 @@ export default function Navbar() {
             Home
           </Link>
           <Link 
-            href="#"
-            className="text-gray-300 text-base font-medium hover:text-primary transition-colors duration-200 hover:scale-105"
+            href="/turfs"
+            className={`text-base font-medium hover:text-primary transition-colors duration-200 hover:scale-105 ${
+              pathname === '/turfs' ? 'text-primary' : 'text-gray-300'
+            }`}
           >
             Turfs
           </Link>
@@ -139,7 +141,7 @@ export default function Navbar() {
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-black font-bold text-sm">
                 {(user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase()}
               </div>
-              <span className="text-white text-sm font-medium">
+              <span className="hidden lg:block text-white text-sm font-medium">
                 {user.user_metadata?.full_name || user.email?.split('@')[0]}
               </span>
               <span className={`material-symbols-outlined text-primary text-xl transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`}>
@@ -225,9 +227,11 @@ export default function Navbar() {
             Home
           </Link>
           <Link 
-            href="#"
+            href="/turfs"
             onClick={() => setIsMenuOpen(false)}
-            className="block text-gray-300 text-base font-medium hover:text-primary transition-all duration-200 py-3 px-4 rounded-lg hover:bg-surface-highlight transform hover:translate-x-2"
+            className={`block text-base font-medium hover:text-primary transition-all duration-200 py-3 px-4 rounded-lg hover:bg-surface-highlight transform hover:translate-x-2 ${
+              pathname === '/turfs' ? 'text-primary bg-surface-highlight' : 'text-gray-300'
+            }`}
           >
             Turfs
           </Link>
@@ -253,6 +257,21 @@ export default function Navbar() {
             </div>
           ) : user ? (
             <div className="mt-6 space-y-3">
+              {/* User Info Card */}
+              <div className="bg-surface-highlight border border-primary/30 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-black font-bold text-lg shrink-0">
+                  {(user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm truncate">
+                    {user.user_metadata?.full_name || 'User'}
+                  </p>
+                  <p className="text-gray-400 text-xs truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+              
               <button 
                 onClick={handleProfileClick}
                 className="w-full bg-primary hover:bg-primary-hover text-black px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"

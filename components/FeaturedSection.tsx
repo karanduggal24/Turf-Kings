@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTurfsStore } from '@/stores/turfsStore';
 import TurfCard from './TurfCard';
 import { TurfCardProps } from '@/app/constants/types';
+import Link from 'next/link';
 
 // Helper function to get sport icon
 const getSportIcon = (sportType: string): string => {
@@ -13,7 +14,7 @@ const getSportIcon = (sportType: string): string => {
     case 'football':
       return 'sports_soccer';
     case 'badminton':
-      return 'sports_tennis'; // Using tennis icon as closest to badminton
+      return 'sports_tennis';
     case 'multi':
       return 'sports';
     default:
@@ -22,15 +23,16 @@ const getSportIcon = (sportType: string): string => {
 };
 
 // Helper function to convert database turf to TurfCard props
-const convertTurfToCardProps = (turf: any): TurfCardProps => {
+const convertTurfToCardProps = (turf: any): TurfCardProps & { turfId: string } => {
   return {
+    turfId: turf.id,
     sport: turf.sport_type.charAt(0).toUpperCase() + turf.sport_type.slice(1),
     sportIcon: getSportIcon(turf.sport_type),
     name: turf.name,
     location: `${turf.location}, ${turf.city}`,
-    distance: '2.5 km', // You can calculate this based on user location later
+    distance: '2.5 km',
     rating: turf.rating || 0,
-    amenities: turf.amenities?.slice(0, 3) || [], // Show only first 3 amenities
+    amenities: turf.amenities?.slice(0, 3) || [],
     price: turf.price_per_hour,
     imageUrl: turf.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800'
   };
@@ -40,7 +42,6 @@ const convertTurfToCardProps = (turf: any): TurfCardProps => {
 function MobileCarousel({ turfs }: { turfs: any[] }) {
   return (
     <div className="relative">
-      {/* Carousel Container - Pure native scroll */}
       <div 
         className="flex gap-4 overflow-x-auto scrollbar-hide pb-8"
         style={{ 
@@ -50,17 +51,14 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
         }}
       >
         {turfs.map((turf) => (
-          <div 
-            key={turf.id} 
-            className="shrink-0 w-72 h-[420px]"
-            style={{ 
-              scrollSnapAlign: 'start'
-            }}
+          <Link 
+            key={turf.id}
+            href={`/turfs/${turf.id}`}
+            className="shrink-0 w-72 h-[420px] block"
+            style={{ scrollSnapAlign: 'start' }}
           >
-            {/* Fixed size container for uniform cards */}
             <div className="w-full h-full">
               <div className="group bg-surface-dark rounded-2xl overflow-hidden hover:shadow-neon-lg transition-all duration-300 border border-surface-highlight hover:border-primary h-full flex flex-col">
-                {/* Image section - fixed height */}
                 <div className="relative aspect-4/3 w-full overflow-hidden shrink-0">
                   <div className="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 border border-surface-highlight">
                     <span className="material-symbols-outlined text-primary text-xs">{getSportIcon(turf.sport_type)}</span>
@@ -78,9 +76,7 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
                   </div>
                 </div>
                 
-                {/* Content section - flexible but constrained */}
                 <div className="p-4 flex flex-col grow min-h-0">
-                  {/* Title and location */}
                   <div className="mb-3">
                     <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{turf.name}</h3>
                     <p className="text-gray-400 text-xs flex items-center gap-1 mt-1 line-clamp-1">
@@ -89,7 +85,6 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
                     </p>
                   </div>
                   
-                  {/* Amenities */}
                   <div className="mb-4 flex items-center gap-1 overflow-hidden flex-wrap">
                     {(turf.amenities?.slice(0, 2) || []).map((amenity: string, index: number) => (
                       <span key={index} className="px-2 py-1 bg-surface-highlight rounded-md text-xs text-gray-300 font-medium border border-surface-highlight whitespace-nowrap">
@@ -101,7 +96,6 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
                     )}
                   </div>
                   
-                  {/* Price and button - fixed at bottom */}
                   <div className="pt-3 border-t border-surface-highlight flex items-center justify-between mt-auto">
                     <div>
                       <p className="text-gray-400 text-xs">Starting from</p>
@@ -109,14 +103,14 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
                         ₹{turf.price_per_hour}<span className="text-xs font-normal text-gray-400">/hr</span>
                       </p>
                     </div>
-                    <button className="bg-primary hover:bg-primary-hover text-black px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 neon-glow-hover">
+                    <span className="bg-primary hover:bg-primary-hover text-black px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 neon-glow-hover">
                       Book Now
-                    </button>
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
@@ -202,10 +196,13 @@ export default function FeaturedSection({ initialTurfs, initialError }: Featured
               Updating...
             </span>
           )}
-          <a className="text-primary hover:text-white font-medium flex items-center gap-2 transition-colors text-lg" href="#">
+          <Link 
+            href="/turfs"
+            className="text-primary hover:text-white font-medium flex items-center gap-2 transition-colors text-lg"
+          >
             View all turfs
             <span className="material-symbols-outlined">arrow_forward</span>
-          </a>
+          </Link>
         </div>
       </div>
 

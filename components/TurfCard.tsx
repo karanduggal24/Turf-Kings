@@ -1,4 +1,6 @@
 import { TurfCardProps } from "@/app/constants/types";
+import Link from "next/link";
+
 export default function TurfCard({
   sport,
   sportIcon,
@@ -8,11 +10,12 @@ export default function TurfCard({
   rating,
   amenities,
   price,
-  imageUrl
-}: TurfCardProps) {
-  return (
+  imageUrl,
+  turfId
+}: TurfCardProps & { turfId?: string }) {
+  const CardContent = (
     <div className="group bg-surface-dark rounded-2xl overflow-hidden hover:shadow-neon-lg transition-all duration-300 border border-surface-highlight hover:border-primary">
-      <div className="relative aspect-[4/3] w-full overflow-hidden">
+      <div className="relative aspect-4/3 w-full overflow-hidden">
         <div className="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-surface-highlight">
           <span className="material-symbols-outlined text-primary text-sm">{sportIcon}</span>
           <span className="text-white text-xs font-bold uppercase tracking-wide">{sport}</span>
@@ -32,12 +35,12 @@ export default function TurfCard({
           <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">{name}</h3>
           <p className="text-gray-400 text-sm flex items-center gap-1 mt-1">
             <span className="material-symbols-outlined text-sm">near_me</span> 
-            {location} • {distance} away
+            {location} • {distance}
           </p>
         </div>
         
         <div className="flex items-center gap-2 flex-wrap">
-          {amenities.map((amenity, index) => (
+          {amenities.slice(0, 3).map((amenity, index) => (
             <span key={index} className="px-3 py-1 bg-surface-highlight rounded-lg text-xs text-gray-300 font-medium border border-surface-highlight">
               {amenity}
             </span>
@@ -58,4 +61,14 @@ export default function TurfCard({
       </div>
     </div>
   );
+
+  if (turfId) {
+    return (
+      <Link href={`/turfs/${turfId}`} className="block">
+        {CardContent}
+      </Link>
+    );
+  }
+
+  return CardContent;
 }

@@ -96,7 +96,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-surface-highlight mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-400 text-xs">© 2024 PlayGround. All rights reserved.</p>
+          <p className="text-gray-400 text-xs">© 2026 Turf-Kings. All rights reserved.</p>
           <div className="flex gap-6">
             <a className="text-gray-400 hover:text-neon-green transition-colors" href="#">
               <span className="material-symbols-outlined text-lg">public</span>

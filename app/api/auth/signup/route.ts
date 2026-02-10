@@ -45,6 +45,36 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating user with admin client...');
 
+    // Check if email already exists
+    const { data: existingEmailUser } = await supabaseAdmin
+      .from('users')
+      .select('email')
+      .eq('email', email)
+      .single();
+
+    if (existingEmailUser) {
+      return NextResponse.json(
+        { error: 'An account with this email already exists. Please login or use a different email.' },
+        { status: 409 }
+      );
+    }
+
+    // Check if phone already exists (if phone is provided)
+    if (phone) {
+      const { data: existingPhoneUser } = await supabaseAdmin
+        .from('users')
+        .select('phone')
+        .eq('phone', phone.trim())
+        .single();
+
+      if (existingPhoneUser) {
+        return NextResponse.json(
+          { error: 'An account with this phone number already exists. Please login or use a different number.' },
+          { status: 409 }
+        );
+      }
+    }
+
     // Create auth user with email auto-confirmed
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -59,6 +89,15 @@ export async function POST(request: NextRequest) {
 
     if (authError) {
       console.error('Auth creation error:', authError);
+      
+      // Handle specific error cases with user-friendly messages
+      if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
+        return NextResponse.json(
+          { error: 'An account with this email already exists. Please login instead.' },
+          { status: 409 }
+        );
+      }
+      
       return NextResponse.json(
         { error: authError.message },
         { status: 400 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 interface LoginFormProps {
   onError: (error: string) => void;
@@ -13,6 +14,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   
   const { signIn, loading } = useAuthStore();
   const router = useRouter();
@@ -71,12 +73,13 @@ export default function LoginForm({ onError }: LoginFormProps) {
             <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
               Password
             </label>
-            <a
-              href="#"
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
               className="text-[10px] font-bold uppercase tracking-tighter text-primary hover:underline"
             >
               Forgot?
-            </a>
+            </button>
           </div>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">
@@ -133,6 +136,12 @@ export default function LoginForm({ onError }: LoginFormProps) {
           )}
         </button>
       </form>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal 
+        isOpen={showForgotPassword} 
+        onClose={() => setShowForgotPassword(false)} 
+      />
     </>
   );
 }

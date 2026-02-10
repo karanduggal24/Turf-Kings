@@ -24,28 +24,35 @@ export const useAuthStore = create<AuthState>()(
           set({ loading: true, error: null }, false, 'signUp/start')
           
           try {
-            const { data, error } = await supabase.auth.signUp({
-              email,
-              password,
-              options: {
-                data: {
-                  full_name: fullName,
-                },
+            // Call our custom signup API
+            const response = await fetch('/api/auth/signup', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
               },
-            })
+              body: JSON.stringify({ email, password, fullName }),
+            });
 
-            if (error) {
-              set({ error: error.message, loading: false }, false, 'signUp/error')
-            } else {
-              // User is created and logged in immediately
-              set({ user: data.user, loading: false }, false, 'signUp/success')
+            const data = await response.json();
+
+            if (!response.ok) {
+              set({ error: data.error, loading: false }, false, 'signUp/error')
+              return { data: null, error: { message: data.error } as AuthError };
             }
 
-            return { data, error }
-          } catch (error) {
-            const errorMessage = 'An unexpected error occurred during sign up'
+            // Set the session in Supabase client
+            if (data.session) {
+              await supabase.auth.setSession(data.session);
+            }
+
+            // User is created and logged in
+            set({ user: data.user, loading: false }, false, 'signUp/success')
+            return { data: { user: data.user, session: data.session }, error: null };
+
+          } catch (error: any) {
+            const errorMessage = error.message || 'An unexpected error occurred during sign up'
             set({ error: errorMessage, loading: false }, false, 'signUp/catch')
-            return { data: null, error: error as AuthError }
+            return { data: null, error: { message: errorMessage } as AuthError }
           }
         },
 

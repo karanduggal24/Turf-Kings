@@ -9,7 +9,7 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onError }: LoginFormProps) {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -22,7 +22,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
     onError('');
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(identifier, password);
       if (error) {
         onError(error.message);
       } else {
@@ -45,21 +45,21 @@ export default function LoginForm({ onError }: LoginFormProps) {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Email */}
+        {/* Email or Phone */}
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
-            Email Address
+            Email or Phone Number
           </label>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">
               mail
             </span>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="w-full bg-black/40 border border-surface-highlight rounded-lg py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-              placeholder="coach@turfkings.com"
+              placeholder="coach@turfkings.com or +91 98765 43210"
               required
             />
           </div>

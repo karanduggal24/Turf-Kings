@@ -12,7 +12,7 @@ export interface AuthState {
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
   signUp: (email: string, password: string, fullName?: string, phone?: string, location?: string) => Promise<{ data: any; error: AuthError | null }>
-  signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>
+  signIn: (identifier: string, password: string) => Promise<{ data: any; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>
   initialize: () => Promise<void>

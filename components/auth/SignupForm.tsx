@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'next/navigation';
 
 interface SignupFormProps {
   onError: (error: string) => void;
@@ -14,6 +15,7 @@ export default function SignupForm({ onError }: SignupFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   
   const { signUp, loading } = useAuthStore();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +26,8 @@ export default function SignupForm({ onError }: SignupFormProps) {
       if (error) {
         onError(error.message);
       } else {
-        onError('Check your email for verification link!');
+        // Redirect to home page after successful signup
+        router.push('/');
       }
     } catch (err) {
       onError('An unexpected error occurred');

@@ -31,14 +31,14 @@ export const useAuthStore = create<AuthState>()(
                 data: {
                   full_name: fullName,
                 },
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
               },
             })
 
             if (error) {
               set({ error: error.message, loading: false }, false, 'signUp/error')
             } else {
-              set({ loading: false }, false, 'signUp/success')
+              // User is created and logged in immediately
+              set({ user: data.user, loading: false }, false, 'signUp/success')
             }
 
             return { data, error }

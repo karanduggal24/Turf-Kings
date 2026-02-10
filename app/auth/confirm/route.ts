@@ -9,10 +9,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type') as EmailOtpType | null;
   const next = searchParams.get('next') ?? '/';
 
-  const redirectTo = request.nextUrl.clone();
-  redirectTo.pathname = next;
-  redirectTo.searchParams.delete('token_hash');
-  redirectTo.searchParams.delete('type');
+  console.log('Confirm route - params:', { token_hash: token_hash?.substring(0, 10) + '...', type });
 
   if (token_hash && type) {
     const cookieStore = await cookies();
@@ -28,33 +25,42 @@ export async function GET(request: NextRequest) {
             try {
               cookieStore.set({ name, value, ...options });
             } catch (error) {
-              // Handle cookie errors
+              console.error('Cookie set error:', error);
             }
           },
           remove(name: string, options: any) {
             try {
               cookieStore.set({ name, value: '', ...options });
             } catch (error) {
-              // Handle cookie errors
+              console.error('Cookie remove error:', error);
             }
           },
         },
       }
     );
 
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       type,
       token_hash,
     });
 
-    if (!error) {
-      redirectTo.searchParams.delete('next');
-      return NextResponse.redirect(redirectTo);
+    if (error) {
+      console.error('Verification error:', error);
+      return NextResponse.redirect(
+        new URL(`/login?error=${encodeURIComponent(error.message)}`, request.url)
+      );
+    }
+
+    if (data?.user) {
+      console.log('Email verified successfully for:', data.user.email);
+      // Redirect to home page with success message
+      return NextResponse.redirect(new URL('/?verified=true', request.url));
     }
   }
 
-  // Return the user to an error page with some instructions
-  redirectTo.pathname = '/login';
-  redirectTo.searchParams.set('error', 'Could not verify email. Please try again.');
-  return NextResponse.redirect(redirectTo);
+  // Missing or invalid parameters
+  console.log('Missing token_hash or type');
+  return NextResponse.redirect(
+    new URL('/login?error=Invalid verification link', request.url)
+  );
 }

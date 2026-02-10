@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const next = requestUrl.searchParams.get('next') || '/';
 
+  console.log('Auth callback params:', { token_hash, type, code });
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,10 +22,18 @@ export async function GET(request: NextRequest) {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            console.error('Error setting cookie:', error);
+          }
         },
         remove(name: string, options: any) {
-          cookieStore.set({ name, value: '', ...options });
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            console.error('Error removing cookie:', error);
+          }
         },
       },
     }
@@ -31,24 +41,52 @@ export async function GET(request: NextRequest) {
 
   // Handle PKCE flow (new method with code)
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(new URL(next, request.url));
+    console.log('Processing PKCE flow with code');
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (error) {
+      console.error('PKCE Error:', error);
+      return NextResponse.redirect(
+        new URL(`/login?error=${encodeURIComponent(error.message)}`, request.url)
+      );
+    }
+    
+    if (data?.session) {
+      console.log('PKCE Success - User logged in:', data.user?.email);
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
   // Handle token hash flow (email verification)
   if (token_hash && type) {
-    const { error } = await supabase.auth.verifyOtp({
+    console.log('Processing token hash flow');
+    const { data, error } = await supabase.auth.verifyOtp({
       type: type as any,
       token_hash,
     });
 
-    if (!error) {
-      return NextResponse.redirect(new URL(next, request.url));
+    if (error) {
+      console.error('Token Hash Error:', error);
+      return NextResponse.redirect(
+        new URL(`/login?error=${encodeURIComponent(error.message)}`, request.url)
+      );
     }
+
+    if (data?.session) {
+      console.log('Email verified successfully - User logged in:', data.user?.email);
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    
+    // Email verified but no session - redirect to login
+    console.log('Email verified but no session created');
+    return NextResponse.redirect(
+      new URL('/login?message=Email confirmed! Please log in.', request.url)
+    );
   }
 
-  // If there's an error or no valid params, redirect to login with error
-  return NextResponse.redirect(new URL('/login?error=auth_failed', request.url));
+  // No valid params
+  console.log('No valid auth params found');
+  return NextResponse.redirect(
+    new URL('/login?error=Invalid verification link', request.url)
+  );
 }

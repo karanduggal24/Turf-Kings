@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import LoginForm from '@/components/auth/LoginForm';
@@ -17,6 +17,19 @@ export default function LoginPageClient() {
   const [isChecking, setIsChecking] = useState(true);
   const { user, loading } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for URL params (error or message)
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    const messageParam = searchParams.get('message');
+    
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+    } else if (messageParam) {
+      setError(decodeURIComponent(messageParam));
+    }
+  }, [searchParams]);
 
   // Check auth immediately and redirect if logged in
   useEffect(() => {

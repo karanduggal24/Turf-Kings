@@ -34,7 +34,7 @@ export default function ContactPageClient() {
           {/* Hero Section */}
           <div className="mb-16">
             <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-[1.1] tracking-tight">
-              GET IN THE GAME – <br/>
+              GET IN THE GAME <br/>
               <span className="text-primary">REACH OUT TO US</span>
             </h2>
             <p className="max-w-2xl text-gray-400 text-lg lg:text-xl font-normal">

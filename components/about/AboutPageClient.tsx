@@ -42,7 +42,7 @@ export default function AboutPageClient() {
         </section>
 
         {/* Core Pillars Section */}
-        <section className="relative z-20 -mt-20 px-6 pb-20">
+        <section className="relative z-20 -mt-20 px-6 pb-20 pt-10">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-6 md:grid-cols-3">
               {/* Our Story */}

@@ -6,9 +6,10 @@ import { useAuthStore } from '@/stores/authStore';
 interface ForgotPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (message: string) => void;
 }
 
-export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProps) {
+export default function ForgotPasswordModal({ isOpen, onClose, onSuccess }: ForgotPasswordModalProps) {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -27,12 +28,18 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
       if (resetError) {
         setError(resetError.message);
       } else {
-        setMessage('Password reset link sent! Check your email.');
+        const successMessage = 'Password reset link sent! Check your email inbox.';
+        setMessage(successMessage);
+        
         setTimeout(() => {
           onClose();
           setEmail('');
           setMessage('');
-        }, 3000);
+          // Notify parent component
+          if (onSuccess) {
+            onSuccess(successMessage);
+          }
+        }, 2000);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred');

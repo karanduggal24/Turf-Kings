@@ -14,6 +14,7 @@ type AuthMode = 'login' | 'signup';
 export default function LoginPageClient() {
   const [mode, setMode] = useState<AuthMode>('login');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isChecking, setIsChecking] = useState(true);
   const { user, loading } = useAuthStore();
   const router = useRouter();
@@ -78,6 +79,7 @@ export default function LoginPageClient() {
               onClick={() => {
                 setMode('login');
                 setError('');
+                setSuccessMessage('');
               }}
               className={`flex-1 py-5 text-xs font-extrabold tracking-[0.2em] uppercase transition-all border-b-2 ${
                 mode === 'login'
@@ -91,6 +93,7 @@ export default function LoginPageClient() {
               onClick={() => {
                 setMode('signup');
                 setError('');
+                setSuccessMessage('');
               }}
               className={`flex-1 py-5 text-xs font-extrabold tracking-[0.2em] uppercase transition-all border-b-2 ${
                 mode === 'signup'
@@ -104,11 +107,37 @@ export default function LoginPageClient() {
 
           {/* Form Content */}
           <div className="p-8">
-            {/* Error/Success Message */}
+            {/* Success Message */}
+            {successMessage && (
+              <div className="bg-primary/10 border border-primary/50 rounded-lg p-4 mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-primary text-xl mt-0.5">
+                    check_circle
+                  </span>
+                  <p className="text-primary text-sm font-medium flex-1">{successMessage}</p>
+                  <button
+                    onClick={() => setSuccessMessage('')}
+                    className="text-primary/60 hover:text-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
             <ErrorMessage message={error} />
 
             {/* Render appropriate form based on mode */}
-            {mode === 'login' && <LoginForm onError={setError} />}
+            {mode === 'login' && (
+              <LoginForm 
+                onError={setError} 
+                onSuccess={(msg) => {
+                  setSuccessMessage(msg);
+                  setError('');
+                }}
+              />
+            )}
             {mode === 'signup' && <SignupForm onError={setError} />}
           </div>
 

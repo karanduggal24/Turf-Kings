@@ -7,9 +7,10 @@ import ForgotPasswordModal from './ForgotPasswordModal';
 
 interface LoginFormProps {
   onError: (error: string) => void;
+  onSuccess?: (message: string) => void;
 }
 
-export default function LoginForm({ onError }: LoginFormProps) {
+export default function LoginForm({ onError, onSuccess }: LoginFormProps) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +19,13 @@ export default function LoginForm({ onError }: LoginFormProps) {
   
   const { signIn, loading } = useAuthStore();
   const router = useRouter();
+
+  const handleResetSuccess = (message: string) => {
+    setShowForgotPassword(false);
+    if (onSuccess) {
+      onSuccess(message);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +148,8 @@ export default function LoginForm({ onError }: LoginFormProps) {
       {/* Forgot Password Modal */}
       <ForgotPasswordModal 
         isOpen={showForgotPassword} 
-        onClose={() => setShowForgotPassword(false)} 
+        onClose={() => setShowForgotPassword(false)}
+        onSuccess={handleResetSuccess}
       />
     </>
   );

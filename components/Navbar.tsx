@@ -119,8 +119,10 @@ export default function Navbar() {
             About
           </Link>
           <Link 
-            href="#"
-            className="text-gray-300 text-base font-medium hover:text-primary transition-colors duration-200 hover:scale-105"
+            href="/contact"
+            className={`text-base font-medium hover:text-primary transition-colors duration-200 hover:scale-105 ${
+              pathname === '/contact' ? 'text-primary' : 'text-gray-300'
+            }`}
           >
             Contact
           </Link>
@@ -247,9 +249,11 @@ export default function Navbar() {
             About
           </Link>
           <Link 
-            href="#"
+            href="/contact"
             onClick={() => setIsMenuOpen(false)}
-            className="block text-gray-300 text-base font-medium hover:text-primary transition-all duration-200 py-3 px-4 rounded-lg hover:bg-surface-highlight transform hover:translate-x-2"
+            className={`block text-base font-medium hover:text-primary transition-all duration-200 py-3 px-4 rounded-lg hover:bg-surface-highlight transform hover:translate-x-2 ${
+              pathname === '/contact' ? 'text-primary bg-surface-highlight' : 'text-gray-300'
+            }`}
           >
             Contact
           </Link>

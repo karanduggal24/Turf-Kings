@@ -3,7 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, fullName } = await request.json();
+    const { email, password, fullName, phone, location } = await request.json();
+
+    console.log('Signup attempt for:', email);
 
     // Validate input
     if (!email || !password) {
@@ -13,10 +15,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Supabase admin client (bypasses RLS)
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters' },
+        { status: 400 }
+      );
+    }
+
+    // Check if service role key exists
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY is not set');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Create Supabase admin client
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!, // Service role key
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
         auth: {
           autoRefreshToken: false,
@@ -25,41 +43,53 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // Step 1: Create auth user
+    console.log('Creating user with admin client...');
+
+    // Create auth user with email auto-confirmed
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirm email
+      email_confirm: true,
       user_metadata: {
-        full_name: fullName || ''
+        full_name: fullName || '',
+        phone: phone || '',
+        location: location || ''
       }
     });
 
     if (authError) {
-      console.error('Auth error:', authError);
+      console.error('Auth creation error:', authError);
       return NextResponse.json(
         { error: authError.message },
         { status: 400 }
       );
     }
 
-    // Step 2: Create user profile in public.users
-    const { error: profileError } = await supabaseAdmin
-      .from('users')
-      .insert({
-        id: authData.user.id,
-        email: email,
-        full_name: fullName || '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
+    console.log('User created successfully:', authData.user.id);
 
-    if (profileError) {
-      console.error('Profile creation error:', profileError);
-      // Don't fail if profile creation fails - user can still login
+    // Try to create profile (don't fail if this doesn't work)
+    try {
+      const { error: profileError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          email: email,
+          full_name: fullName || '',
+          phone: phone || '',
+          location: location || '',
+        });
+
+      if (profileError) {
+        console.error('Profile creation error (non-fatal):', profileError);
+      } else {
+        console.log('Profile created successfully');
+      }
+    } catch (profileErr) {
+      console.error('Profile creation exception (non-fatal):', profileErr);
     }
 
-    // Step 3: Sign in the user to get a session
+    // Sign in to get session
+    console.log('Signing in user...');
     const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password
@@ -68,10 +98,15 @@ export async function POST(request: NextRequest) {
     if (sessionError) {
       console.error('Session error:', sessionError);
       return NextResponse.json(
-        { error: 'User created but could not sign in. Please try logging in.' },
+        { 
+          user: authData.user,
+          message: 'User created successfully. Please log in.'
+        },
         { status: 201 }
       );
     }
+
+    console.log('Signup complete!');
 
     return NextResponse.json({
       user: sessionData.user,
@@ -79,7 +114,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Signup error:', error);
+    console.error('Unexpected signup error:', error);
     return NextResponse.json(
       { error: error.message || 'An unexpected error occurred' },
       { status: 500 }

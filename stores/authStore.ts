@@ -20,7 +20,7 @@ export const useAuthStore = create<AuthState>()(
         
         setError: (error) => set({ error }, false, 'setError'),
 
-        signUp: async (email: string, password: string, fullName?: string) => {
+        signUp: async (email: string, password: string, fullName?: string, phone?: string, location?: string) => {
           set({ loading: true, error: null }, false, 'signUp/start')
           
           try {
@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthState>()(
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ email, password, fullName }),
+              body: JSON.stringify({ email, password, fullName, phone, location }),
             });
 
             const data = await response.json();

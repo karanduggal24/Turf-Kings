@@ -12,6 +12,8 @@ export default function SignupForm({ onError }: SignupFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
   const { signUp, loading } = useAuthStore();
@@ -22,7 +24,7 @@ export default function SignupForm({ onError }: SignupFormProps) {
     onError('');
 
     try {
-      const { error } = await signUp(email, password, fullName);
+      const { error } = await signUp(email, password, fullName, phone, location);
       if (error) {
         onError(error.message);
       } else {
@@ -81,6 +83,46 @@ export default function SignupForm({ onError }: SignupFormProps) {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-black/40 border border-surface-highlight rounded-lg py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
               placeholder="coach@turfkings.com"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Phone Number */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
+            Phone Number
+          </label>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">
+              phone
+            </span>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full bg-black/40 border border-surface-highlight rounded-lg py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              placeholder="+91 98765 43210"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">
+            Location
+          </label>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">
+              location_on
+            </span>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full bg-black/40 border border-surface-highlight rounded-lg py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              placeholder="Mumbai, Maharashtra"
               required
             />
           </div>

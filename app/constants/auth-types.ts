@@ -11,7 +11,7 @@ export interface AuthState {
   setUser: (user: User | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ data: any; error: AuthError | null }>
+  signUp: (email: string, password: string, fullName?: string, phone?: string, location?: string) => Promise<{ data: any; error: AuthError | null }>
   signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>

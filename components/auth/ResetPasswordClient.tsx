@@ -21,27 +21,24 @@ export default function ResetPasswordClient() {
   // Check if this is a valid password reset link
   useEffect(() => {
     const checkResetToken = async () => {
+      // Get all URL parameters for debugging
       const type = searchParams.get('type');
-      const accessToken = searchParams.get('access_token');
-
-      // Must have type=recovery and access_token
-      if (type !== 'recovery' || !accessToken) {
-        setError('Invalid or expired reset link. Please request a new password reset.');
-        setIsValidToken(false);
-        setIsChecking(false);
-        
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          router.push('/login');
-        }, 3000);
-        return;
-      }
-
-      // Verify the session is valid
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const tokenHash = searchParams.get('token_hash');
+      const error = searchParams.get('error');
+      const errorDescription = searchParams.get('error_description');
       
-      if (sessionError || !session) {
-        setError('Invalid or expired reset link. Please request a new password reset.');
+      console.log('Reset password URL params:', { 
+        type, 
+        tokenHash: tokenHash ? 'present' : 'missing',
+        error, 
+        errorDescription,
+        fullURL: window.location.href 
+      });
+
+      // Check if there's an error from Supabase
+      if (error) {
+        console.error('Supabase error in URL:', error, errorDescription);
+        setError(errorDescription || 'Invalid or expired reset link. Please request a new password reset.');
         setIsValidToken(false);
         setIsChecking(false);
         
@@ -51,10 +48,36 @@ export default function ResetPasswordClient() {
         return;
       }
 
-      // Valid token
-      setIsValidToken(true);
+      // Get current user and session
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      console.log('Auth state:', { 
+        hasUser: !!user, 
+        userEmail: user?.email,
+        hasSession: !!session,
+        userError: userError?.message 
+      });
+
+      // Supabase automatically logs in the user when they click the reset link
+      // So if we have a user session, it means the token was valid
+      if (user && session) {
+        console.log('Valid reset session detected');
+        setIsValidToken(true);
+        setIsChecking(false);
+        setMessage('Please enter your new password below.');
+        return;
+      }
+
+      // No valid session found
+      console.error('No valid session found for password reset');
+      setError('Invalid or expired reset link. Please request a new password reset.');
+      setIsValidToken(false);
       setIsChecking(false);
-      setMessage('Please enter your new password below.');
+      
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
     };
 
     checkResetToken();
@@ -78,19 +101,28 @@ export default function ResetPasswordClient() {
     setLoading(true);
 
     try {
+      console.log('Attempting to update password...');
+      
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (updateError) {
+        console.error('Password update error:', updateError);
         setError(updateError.message);
       } else {
+        console.log('Password updated successfully');
         setMessage('Password updated successfully! Redirecting to login...');
+        
+        // Sign out the user so they can log in with new password
+        await supabase.auth.signOut();
+        
         setTimeout(() => {
           router.push('/login');
         }, 2000);
       }
     } catch (err: any) {
+      console.error('Unexpected error during password update:', err);
       setError(err.message || 'An error occurred');
     } finally {
       setLoading(false);

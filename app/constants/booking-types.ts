@@ -76,13 +76,15 @@ export interface BookingsState {
   loading: boolean
   error: string | null
   pagination: Pagination
+  lastFetched: number | null
+  currentUserId: string | null
   
   // Actions
   setBookings: (bookings: Booking[]) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
   setPagination: (pagination: Pagination) => void
-  fetchBookings: (params?: BookingParams) => Promise<void>
+  fetchBookings: (params?: BookingParams, forceRefresh?: boolean) => Promise<void>
   fetchBookingById: (id: string) => Promise<Booking | null>
   createBooking: (bookingData: CreateBookingData) => Promise<Booking | null>
   updateBooking: (id: string, updates: Partial<Booking>) => Promise<Booking | null>
@@ -101,4 +103,5 @@ export const DEFAULT_BOOKING_PAGINATION: Pagination = {
 // Booking Store Configuration
 export const BOOKING_STORE_CONFIG = {
   devtoolsName: 'bookings-store',
+  cacheTime: 5 * 60 * 1000, // 5 minutes cache
 } as const

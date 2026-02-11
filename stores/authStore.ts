@@ -140,24 +140,40 @@ export const useAuthStore = create<AuthState>()(
           }
           
           try {
-            // Get initial session
+            // Get initial session from Supabase (checks localStorage automatically)
             const { data: { session } } = await supabase.auth.getSession()
             
             const newUser = session?.user ?? null
-            if (JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
+            
+            // Update user if session exists and is different
+            if (session && JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
               set({ user: newUser }, false, 'initialize/session')
+            } else if (!session && currentUser) {
+              // Session expired but user still in store - clear it
+              set({ user: null }, false, 'initialize/session-expired')
             }
 
-            // Listen for auth changes
+            // Listen for auth changes (handles token refresh automatically)
             supabase.auth.onAuthStateChange(async (event, session) => {
               const user = session?.user ?? null
-              set({ user, loading: false }, false, `authStateChange/${event}`)
+              
+              if (event === 'SIGNED_OUT') {
+                set({ user: null, loading: false }, false, `authStateChange/${event}`)
+              } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                set({ user, loading: false }, false, `authStateChange/${event}`)
+              } else if (event === 'USER_UPDATED') {
+                set({ user, loading: false }, false, `authStateChange/${event}`)
+              } else {
+                // Handle any other events
+                set({ user, loading: false }, false, `authStateChange/${event}`)
+              }
             })
 
             set({ loading: false }, false, 'initialize/complete')
           } catch (error) {
             console.error('Error initializing auth:', error)
             set({ 
+              user: null, // Clear user on error
               error: 'Failed to initialize authentication', 
               loading: false 
             }, false, 'initialize/error')

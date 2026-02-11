@@ -18,6 +18,8 @@ export const useBookingsStore = create<BookingsState>()(
       loading: false,
       error: null,
       pagination: DEFAULT_BOOKING_PAGINATION,
+      lastFetched: null,
+      currentUserId: null,
 
       // Actions
       setBookings: (bookings) => set({ bookings }, false, 'setBookings'),
@@ -28,7 +30,20 @@ export const useBookingsStore = create<BookingsState>()(
       
       setPagination: (pagination) => set({ pagination }, false, 'setPagination'),
 
-      fetchBookings: async (params?: BookingParams) => {
+      fetchBookings: async (params?: BookingParams, forceRefresh = false) => {
+        const state = get();
+        const now = Date.now();
+        
+        // Check if we have cached data for the same user
+        const isSameUser = params?.user_id === state.currentUserId;
+        const isCacheValid = state.lastFetched && (now - state.lastFetched) < BOOKING_STORE_CONFIG.cacheTime;
+        
+        // Return cached data if valid and not forcing refresh
+        if (!forceRefresh && isSameUser && isCacheValid && state.bookings.length > 0) {
+          console.log('Using cached bookings data');
+          return;
+        }
+
         set({ loading: true, error: null }, false, 'fetchBookings/start')
 
         try {
@@ -58,7 +73,9 @@ export const useBookingsStore = create<BookingsState>()(
             bookings: data.bookings || [],
             pagination: data.pagination || DEFAULT_BOOKING_PAGINATION,
             loading: false,
-            error: null
+            error: null,
+            lastFetched: Date.now(),
+            currentUserId: params?.user_id || null
           }, false, 'fetchBookings/success')
 
         } catch (error) {

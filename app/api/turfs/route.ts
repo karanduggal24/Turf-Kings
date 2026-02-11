@@ -54,8 +54,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  
   try {
     const body = await request.json()
     
@@ -79,7 +77,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: turf, error } = await supabase
+    // Use service role to bypass RLS for creating turfs
+    const { createClient } = require('@supabase/supabase-js')
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    const { data: turf, error } = await supabaseAdmin
       .from('turfs')
       .insert({
         name,

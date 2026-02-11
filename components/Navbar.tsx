@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, loading, signOut } = useAuthStore();
+  const { isAdmin } = useUserRole();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -174,6 +176,18 @@ export default function Navbar() {
                     </span>
                     <span className="font-medium">My Profile</span>
                   </button>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-surface-highlight transition-all duration-200 text-sm"
+                    >
+                      <span className="material-symbols-outlined text-xl">
+                        admin_panel_settings
+                      </span>
+                      <span className="font-medium">Admin Dashboard</span>
+                    </Link>
+                  )}
                   <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-sm"
@@ -289,6 +303,18 @@ export default function Navbar() {
                 </span>
                 <span>My Profile</span>
               </button>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-xl">
+                    admin_panel_settings
+                  </span>
+                  <span>Admin Dashboard</span>
+                </Link>
+              )}
               <button 
                 onClick={handleSignOut}
                 className="w-full bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"

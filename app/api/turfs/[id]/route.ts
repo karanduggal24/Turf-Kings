@@ -24,6 +24,7 @@ export async function GET(
       `)
       .eq('id', id)
       .eq('is_active', true)
+      .eq('approval_status', 'approved')  // Only show approved turfs
       .single()
 
     if (error) {

@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         owner:users(full_name, email)
       `)
       .eq('is_active', true)
+      .eq('approval_status', 'approved')  // Only show approved turfs
       .order('rating', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -104,14 +105,24 @@ export async function POST(request: NextRequest) {
         sport_type,
         amenities: amenities || [],
         images: images || [],
-        owner_id
+        owner_id,
+        is_active: false,  // Inactive until approved by admin
+        approval_status: 'pending'  // Default status for new submissions
       })
       .select()
       .single()
 
     if (error) {
+      console.error('Error creating turf:', error);
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
+
+    console.log('Turf created successfully:', {
+      id: turf.id,
+      name: turf.name,
+      is_active: turf.is_active,
+      approval_status: turf.approval_status
+    });
 
     return NextResponse.json({ turf }, { status: 201 })
   } catch (error) {

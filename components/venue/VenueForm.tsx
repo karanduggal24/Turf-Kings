@@ -97,8 +97,8 @@ export default function VenueForm({ userId }: VenueFormProps) {
         throw new Error(data.error || 'Failed to create venue');
       }
 
-      // Redirect to success page or turf detail
-      router.push(`/turfs/${data.turf.id}`);
+      // Redirect to success page
+      router.push(`/list-venue/success?id=${data.turf.id}`);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {

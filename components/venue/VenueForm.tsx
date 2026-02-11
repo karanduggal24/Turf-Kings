@@ -34,6 +34,7 @@ export default function VenueForm({ userId }: VenueFormProps) {
     location: '',
     city: '',
     state: '',
+    phone: '',
     pricePerHour: '',
     sportType: 'football' as 'cricket' | 'football' | 'badminton' | 'multi',
     amenities: [] as string[],
@@ -69,7 +70,7 @@ export default function VenueForm({ userId }: VenueFormProps) {
 
     try {
       // Validation
-      if (!formData.name || !formData.location || !formData.city || !formData.state || !formData.pricePerHour) {
+      if (!formData.name || !formData.location || !formData.city || !formData.state || !formData.pricePerHour || !formData.phone) {
         throw new Error('Please fill in all required fields');
       }
 
@@ -223,6 +224,22 @@ export default function VenueForm({ userId }: VenueFormProps) {
               onChange={handleInputChange}
               className="w-full px-4 py-3 rounded-lg bg-black/40 border border-primary/20 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white"
               placeholder="e.g. Maharashtra"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-gray-200" htmlFor="phone">
+              Contact Phone <span className="text-primary">*</span>
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 rounded-lg bg-black/40 border border-primary/20 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white"
+              placeholder="e.g. +91 98765 43210"
               required
             />
           </div>

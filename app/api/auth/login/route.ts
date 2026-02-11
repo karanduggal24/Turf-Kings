@@ -5,8 +5,6 @@ export async function POST(request: NextRequest) {
   try {
     const { identifier, password } = await request.json();
 
-    console.log('Login attempt with:', identifier);
-
     // Validate input
     if (!identifier || !password) {
       return NextResponse.json(
@@ -33,7 +31,6 @@ export async function POST(request: NextRequest) {
     const isPhone = /^[\d\s\-+()]+$/.test(identifier.trim());
 
     if (isPhone) {
-      console.log('Identifier is a phone number, looking up email...');
       
       // Look up email by phone number
       const { data: userData, error: lookupError } = await supabaseAdmin
@@ -51,11 +48,9 @@ export async function POST(request: NextRequest) {
       }
 
       email = userData.email;
-      console.log('Found email for phone number');
     }
 
     // Sign in with email and password
-    console.log('Attempting sign in with email...');
     const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password
@@ -68,8 +63,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    console.log('Login successful!');
 
     return NextResponse.json({
       user: sessionData.user,

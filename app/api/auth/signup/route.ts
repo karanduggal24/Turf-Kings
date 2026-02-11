@@ -5,8 +5,6 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password, fullName, phone, location } = await request.json();
 
-    console.log('Signup attempt for:', email);
-
     // Validate input
     if (!email || !password) {
       return NextResponse.json(
@@ -42,8 +40,6 @@ export async function POST(request: NextRequest) {
         }
       }
     );
-
-    console.log('Creating user with admin client...');
 
     // Check if email already exists
     const { data: existingEmailUser } = await supabaseAdmin
@@ -104,8 +100,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('User created successfully:', authData.user.id);
-
     // Try to create profile (don't fail if this doesn't work)
     try {
       const { error: profileError } = await supabaseAdmin
@@ -119,16 +113,13 @@ export async function POST(request: NextRequest) {
         });
 
       if (profileError) {
-        console.error('Profile creation error (non-fatal):', profileError);
-      } else {
-        console.log('Profile created successfully');
+        // Non-fatal error, just log it
       }
     } catch (profileErr) {
       console.error('Profile creation exception (non-fatal):', profileErr);
     }
 
     // Sign in to get session
-    console.log('Signing in user...');
     const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password
@@ -144,8 +135,6 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     }
-
-    console.log('Signup complete!');
 
     return NextResponse.json({
       user: sessionData.user,

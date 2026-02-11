@@ -12,10 +12,6 @@ export default async function TurfsPage() {
     .eq('is_active', true)
     .order('rating', { ascending: false });
 
-  console.log('Turfs data:', turfs);
-  console.log('Turfs error:', error);
-  console.log('Turfs count:', turfs?.length || 0);
-
   return (
     <div className="min-h-screen flex flex-col bg-black">
       <Navbar />

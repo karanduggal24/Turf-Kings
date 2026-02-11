@@ -6,6 +6,7 @@ export interface Turf {
   location: string
   city: string
   state: string
+  phone: string | null
   price_per_hour: number
   sport_type: 'cricket' | 'football' | 'badminton' | 'multi'
   amenities: string[]

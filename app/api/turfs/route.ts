@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
       location,
       city,
       state,
+      phone,
       price_per_hour,
       sport_type,
       amenities,
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
       owner_id
     } = body
 
-    if (!name || !location || !city || !state || !price_per_hour || !sport_type || !owner_id) {
+    if (!name || !location || !city || !state || !phone || !price_per_hour || !sport_type || !owner_id) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
         location,
         city,
         state,
+        phone,
         price_per_hour,
         sport_type,
         amenities: amenities || [],

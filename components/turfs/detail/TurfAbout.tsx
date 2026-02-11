@@ -24,6 +24,27 @@ export default function TurfAbout({ turf }: TurfAboutProps) {
       <p className="text-gray-400 leading-relaxed text-lg">
         {turf.description || `${turf.name} features top-of-the-line synthetic grass specifically engineered for professional-grade impact absorption. Whether you're planning a competitive match or a casual game, our floodlit arena provides the ultimate atmosphere.`}
       </p>
+
+      {/* Contact Information */}
+      {turf.phone && (
+        <div className="bg-surface-dark/50 border border-primary/10 rounded-xl p-6">
+          <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-3">
+            Contact Information
+          </h4>
+          <a 
+            href={`tel:${turf.phone}`}
+            className="flex items-center gap-3 text-white hover:text-primary transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+              <span className="material-symbols-outlined text-primary">phone</span>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-wider">Phone</p>
+              <p className="text-lg font-bold">{turf.phone}</p>
+            </div>
+          </a>
+        </div>
+      )}
       
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6">
         {turf.amenities.map((amenity, index) => (

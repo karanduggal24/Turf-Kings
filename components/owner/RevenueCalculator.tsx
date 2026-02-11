@@ -110,8 +110,8 @@ export default function RevenueCalculator() {
                 <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
                   Estimated Monthly Revenue
                 </h4>
-                <div className="text-6xl lg:text-7xl font-black text-primary italic tracking-tighter mb-4">
-                  ₹{monthlyRevenue.toLocaleString()}
+                <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-primary italic tracking-tighter mb-4 break-words">
+                  ₹{monthlyRevenue.toLocaleString('en-IN')}
                 </div>
                 <p className="text-xs text-gray-500 font-medium">
                   *Based on 30 days of operation at selected rates

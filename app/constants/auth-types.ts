@@ -1,5 +1,13 @@
 import { User, AuthError } from '@supabase/supabase-js'
 
+// User Role Type
+export type UserRole = 'user' | 'turf_owner' | 'admin'
+
+// Extended User Type with Role
+export interface UserWithRole extends User {
+  role?: UserRole
+}
+
 // Auth Store State Interface
 export interface AuthState {
   // State

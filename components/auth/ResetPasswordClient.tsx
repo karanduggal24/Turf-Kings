@@ -26,18 +26,9 @@ export default function ResetPasswordClient() {
       const tokenHash = searchParams.get('token_hash');
       const error = searchParams.get('error');
       const errorDescription = searchParams.get('error_description');
-      
-      console.log('Reset password URL params:', { 
-        type, 
-        tokenHash: tokenHash ? 'present' : 'missing',
-        error, 
-        errorDescription,
-        fullURL: window.location.href 
-      });
 
       // Check if there's an error from Supabase
       if (error) {
-        console.error('Supabase error in URL:', error, errorDescription);
         setError(errorDescription || 'Invalid or expired reset link. Please request a new password reset.');
         setIsValidToken(false);
         setIsChecking(false);
@@ -51,18 +42,10 @@ export default function ResetPasswordClient() {
       // Get current user and session
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       const { data: { session } } = await supabase.auth.getSession();
-      
-      console.log('Auth state:', { 
-        hasUser: !!user, 
-        userEmail: user?.email,
-        hasSession: !!session,
-        userError: userError?.message 
-      });
 
       // Supabase automatically logs in the user when they click the reset link
       // So if we have a user session, it means the token was valid
       if (user && session) {
-        console.log('Valid reset session detected');
         setIsValidToken(true);
         setIsChecking(false);
         setMessage('Please enter your new password below.');
@@ -101,7 +84,6 @@ export default function ResetPasswordClient() {
     setLoading(true);
 
     try {
-      console.log('Attempting to update password...');
       
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
@@ -111,7 +93,6 @@ export default function ResetPasswordClient() {
         console.error('Password update error:', updateError);
         setError(updateError.message);
       } else {
-        console.log('Password updated successfully');
         setMessage('Password updated successfully! Redirecting to login...');
         
         // Sign out the user so they can log in with new password

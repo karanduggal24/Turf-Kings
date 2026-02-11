@@ -14,8 +14,6 @@ export default async function TurfDetailPage({ params }: TurfDetailPageProps) {
   const { id } = await params;
   const supabase = await createServerSupabaseClient();
   
-  console.log('Fetching turf with ID:', id);
-  
   const { data: turf, error } = await supabase
     .from('turfs')
     .select('*')
@@ -23,11 +21,7 @@ export default async function TurfDetailPage({ params }: TurfDetailPageProps) {
     .eq('is_active', true)
     .single();
 
-  console.log('Turf data:', turf);
-  console.log('Turf error:', error);
-
   if (error || !turf) {
-    console.log('Turf not found, showing 404');
     notFound();
   }
 

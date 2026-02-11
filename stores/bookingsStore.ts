@@ -40,7 +40,6 @@ export const useBookingsStore = create<BookingsState>()(
         
         // Return cached data if valid and not forcing refresh
         if (!forceRefresh && isSameUser && isCacheValid && state.bookings.length > 0) {
-          console.log('Using cached bookings data');
           return;
         }
 

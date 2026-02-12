@@ -37,6 +37,12 @@ export default function BookingWidget({ turf }: BookingWidgetProps) {
     }
   }, []);
 
+  const timeSlots = [
+    '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
+    '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+    '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
+  ];
+
   // Fetch booked slots when date changes
   useEffect(() => {
     if (selectedDate) {
@@ -54,38 +60,55 @@ export default function BookingWidget({ turf }: BookingWidgetProps) {
         
         // Extract ALL time slots within each booking's range
         const booked: string[] = [];
-        data.bookings
-          .filter((b: any) => b.status !== 'cancelled')
-          .forEach((b: any) => {
-            const startTime = b.start_time.substring(0, 5); // Get HH:MM format
-            const endTime = b.end_time.substring(0, 5);
-            
-            // Find all slots between start and end time
-            const startIndex = timeSlots.findIndex(slot => slot === startTime);
-            const endIndex = timeSlots.findIndex(slot => slot === endTime);
-            
-            if (startIndex !== -1) {
-              // Mark all slots from start to end (excluding end) as booked
-              for (let i = startIndex; i < endIndex && i < timeSlots.length; i++) {
-                if (!booked.includes(timeSlots[i])) {
-                  booked.push(timeSlots[i]);
+        
+        if (data.bookings && Array.isArray(data.bookings)) {
+          data.bookings
+            .filter((b: any) => b.status !== 'cancelled')
+            .forEach((b: any) => {
+              // Handle both HH:MM:SS and HH:MM formats
+              const startTime = b.start_time.substring(0, 5); // Get HH:MM format
+              const endTime = b.end_time.substring(0, 5);
+              
+              // Find all slots between start and end time
+              const startIndex = timeSlots.findIndex(slot => slot === startTime);
+              let endIndex = timeSlots.findIndex(slot => slot === endTime);
+              
+              // Handle midnight/end of day bookings (00:00 or 24:00)
+              if (endIndex === -1 && (endTime === '00:00' || endTime === '24:00')) {
+                endIndex = timeSlots.length; // Mark until end of available slots
+              }
+              
+              if (startIndex !== -1) {
+                // Mark all slots from start to end (excluding end) as booked
+                const lastIndex = endIndex !== -1 ? endIndex : timeSlots.length;
+                for (let i = startIndex; i < lastIndex && i < timeSlots.length; i++) {
+                  if (!booked.includes(timeSlots[i])) {
+                    booked.push(timeSlots[i]);
+                  }
                 }
               }
-            }
-          });
+            });
+        }
         
         setBookedSlots(booked);
       }
     } catch (error) {
-      // Silent fail
+      // Silent fail but reset booked slots
+      setBookedSlots([]);
     }
   }
 
-  const timeSlots = [
-    '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
-    '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-    '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
-  ];
+  // Check if a time slot is in the past
+  const isSlotInPast = (time: string): boolean => {
+    if (!selectedDate) return false;
+    
+    const now = new Date();
+    const [hours, minutes] = time.split(':').map(Number);
+    const slotDate = new Date(selectedDate);
+    slotDate.setHours(hours, minutes, 0, 0);
+    
+    return slotDate < now;
+  };
 
   const formatTime = (time: string) => {
     const [hours] = time.split(':');
@@ -111,7 +134,8 @@ export default function BookingWidget({ turf }: BookingWidgetProps) {
   };
 
   const toggleTimeSlot = (time: string) => {
-    if (bookedSlots.includes(time)) return;
+    // Don't allow selection of booked or past slots
+    if (bookedSlots.includes(time) || isSlotInPast(time)) return;
 
     setSelectedTimes(prev => {
       let newSelection: string[];
@@ -271,16 +295,20 @@ export default function BookingWidget({ turf }: BookingWidgetProps) {
           <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
             {timeSlots.map((time) => {
               const isBooked = bookedSlots.includes(time);
+              const isPast = isSlotInPast(time);
               const isSelected = selectedTimes.includes(time);
+              const isDisabled = isBooked || isPast;
               
               return (
                 <button
                   key={time}
                   onClick={() => toggleTimeSlot(time)}
-                  disabled={isBooked}
+                  disabled={isDisabled}
                   className={`py-3 px-2 rounded-lg text-xs font-bold transition-all ${
                     isBooked
                       ? 'bg-red-500/10 text-red-500 border border-red-500/20 cursor-not-allowed'
+                      : isPast
+                      ? 'bg-gray-500/10 text-gray-500 border border-gray-500/20 cursor-not-allowed opacity-50'
                       : isSelected
                       ? 'bg-primary text-black border-2 border-primary'
                       : 'bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50'
@@ -288,6 +316,7 @@ export default function BookingWidget({ turf }: BookingWidgetProps) {
                 >
                   {formatTime(time)}
                   {isBooked && <div className="text-[8px] mt-1">BOOKED</div>}
+                  {isPast && !isBooked && <div className="text-[8px] mt-1">PAST</div>}
                 </button>
               );
             })}

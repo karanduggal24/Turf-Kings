@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 
 interface BookingShareData {
   sport: string;
@@ -39,8 +40,6 @@ export default function BookingShare() {
           const result = await response.json();
           setData(result);
         }
-      } catch (error) {
-        console.error('Error fetching booking share:', error);
       } finally {
         setLoading(false);
       }
@@ -61,9 +60,37 @@ export default function BookingShare() {
   const totalBookings = data?.totalBookings || 0;
   const bookingShare = data?.bookingShare || [];
 
-  // Calculate stroke dashoffset for each segment
-  const circumference = 2 * Math.PI * 80; // 2πr where r=80
-  let currentOffset = 0;
+  // Filter and format data for Recharts
+  const chartData = bookingShare
+    .filter((item) => item.count > 0)
+    .map((item) => ({
+      name: SPORT_LABELS[item.sport] || item.sport,
+      value: item.count,
+      percentage: item.percentage,
+      color: SPORT_COLORS[item.sport] || '#6B7280',
+    }));
+
+  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percentage }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    if (percentage < 5) return null; // Don't show label for small slices
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        className="text-xs font-bold"
+      >
+        {`${percentage}%`}
+      </text>
+    );
+  };
 
   return (
     <div className="bg-white/5 backdrop-blur-md border border-primary/10 p-8 rounded-2xl flex flex-col items-center justify-center">
@@ -80,48 +107,28 @@ export default function BookingShare() {
       ) : (
         <>
           {/* Doughnut Chart */}
-          <div className="relative w-48 h-48 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
-              {/* Background circle */}
-              <circle
-                className="text-primary/10"
-                cx={96}
-                cy={96}
-                fill="transparent"
-                r={80}
-                stroke="currentColor"
-                strokeWidth={20}
-              />
-              
-              {/* Dynamic segments */}
-              {bookingShare.map((item, index) => {
-                if (item.count === 0) return null;
-                
-                const segmentLength = (item.percentage / 100) * circumference;
-                const offset = currentOffset;
-                currentOffset += segmentLength;
-                
-                const strokeColor = SPORT_COLORS[item.sport] || '#6B7280';
-                
-                return (
-                  <circle
-                    key={item.sport}
-                    cx={96}
-                    cy={96}
-                    fill="transparent"
-                    r={80}
-                    stroke={strokeColor}
-                    strokeDasharray={circumference}
-                    strokeDashoffset={circumference - offset}
-                    strokeWidth={20}
-                    style={{
-                      strokeDasharray: `${segmentLength} ${circumference}`,
-                    }}
-                  />
-                );
-              })}
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="relative w-full h-64 flex items-center justify-center [&_.recharts-pie-sector]:!cursor-default [&_.recharts-sector]:!outline-none">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={renderCustomLabel}
+                  labelLine={false}
+                  isAnimationActive={false}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-3xl font-bold text-white">
                 {totalBookings >= 1000 ? `${(totalBookings / 1000).toFixed(1)}k` : totalBookings}
               </span>
@@ -131,19 +138,17 @@ export default function BookingShare() {
 
           {/* Legend */}
           <div className="w-full mt-8 grid grid-cols-2 gap-4">
-            {bookingShare
-              .filter((item) => item.count > 0)
-              .map((item) => (
-                <div key={item.sport} className="flex items-center gap-2">
-                  <span 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: SPORT_COLORS[item.sport] || '#6B7280' }}
-                  ></span>
-                  <span className="text-xs text-gray-400">
-                    {SPORT_LABELS[item.sport] || item.sport} ({item.percentage}%)
-                  </span>
-                </div>
-              ))}
+            {chartData.map((item) => (
+              <div key={item.name} className="flex items-center gap-2">
+                <span 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: item.color }}
+                ></span>
+                <span className="text-xs text-gray-400">
+                  {item.name} ({item.percentage}%)
+                </span>
+              </div>
+            ))}
           </div>
         </>
       )}

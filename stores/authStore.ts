@@ -141,7 +141,14 @@ export const useAuthStore = create<AuthState>()(
           
           try {
             // Get initial session from Supabase (checks localStorage automatically)
-            const { data: { session } } = await supabase.auth.getSession()
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+            
+            // If there's a session error (like invalid refresh token), clear everything
+            if (sessionError) {
+              await supabase.auth.signOut()
+              set({ user: null, loading: false }, false, 'initialize/session-error')
+              return
+            }
             
             const newUser = session?.user ?? null
             
@@ -170,11 +177,14 @@ export const useAuthStore = create<AuthState>()(
             })
 
             set({ loading: false }, false, 'initialize/complete')
-          } catch (error) {
-            console.error('Error initializing auth:', error)
+          } catch (error: any) {
+            // If it's a refresh token error, clear the session
+            if (error?.message?.includes('refresh') || error?.message?.includes('token')) {
+              await supabase.auth.signOut()
+            }
             set({ 
               user: null, // Clear user on error
-              error: 'Failed to initialize authentication', 
+              error: null, // Don't show error to user for token issues
               loading: false 
             }, false, 'initialize/error')
           }

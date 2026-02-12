@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface ChartData {
   date: string;
@@ -27,12 +28,19 @@ export default function RevenueChart({ period }: RevenueChartProps) {
         const result = await response.json();
         setData(result.data || []);
       }
-    } catch (error) {
-      console.error('Error fetching chart data:', error);
     } finally {
       setLoading(false);
     }
   }
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const formatCurrency = (value: number) => {
+    return `₹${value.toFixed(0)}`;
+  };
 
   if (loading) {
     return (
@@ -43,45 +51,6 @@ export default function RevenueChart({ period }: RevenueChartProps) {
       </div>
     );
   }
-
-  // Calculate max value for scaling
-  const maxAmount = data.length > 0 ? Math.max(...data.map((d) => d.amount)) : 0;
-  const chartHeight = 300;
-  const chartWidth = 1000;
-
-  // Generate SVG path
-  const generatePath = () => {
-    if (data.length === 0) return '';
-
-    const points = data.map((item, index) => {
-      const x = (index / (data.length - 1)) * chartWidth;
-      const y = chartHeight - (item.amount / maxAmount) * (chartHeight - 50);
-      return `${x},${y}`;
-    });
-
-    return `M ${points.join(' L ')}`;
-  };
-
-  // Generate area path for gradient fill
-  const generateAreaPath = () => {
-    if (data.length === 0) return '';
-
-    const path = generatePath();
-    return `${path} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z`;
-  };
-
-  // Format date labels
-  const getDateLabels = () => {
-    if (data.length === 0) return [];
-    
-    const step = Math.ceil(data.length / 5);
-    return data.filter((_, index) => index % step === 0 || index === data.length - 1);
-  };
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
   return (
     <div className="bg-white/5 border border-primary/10 rounded-xl p-6">
@@ -98,60 +67,58 @@ export default function RevenueChart({ period }: RevenueChartProps) {
         </div>
       </div>
 
-      <div className="h-[300px] w-full relative">
+      <div className="h-[300px] w-full">
         {data.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">
             No revenue data available for this period
           </div>
         ) : (
-          <>
-            <svg className="w-full h-full" preserveAspectRatio="none" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#33f20d" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#33f20d" stopOpacity="0" />
+                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#33f20d" stopOpacity={1}/>
+                  <stop offset="100%" stopColor="#33f20d" stopOpacity={0.6}/>
                 </linearGradient>
               </defs>
-
-              {/* Area fill */}
-              <path d={generateAreaPath()} fill="url(#chartGradient)" />
-
-              {/* Line */}
-              <path
-                d={generatePath()}
-                fill="none"
-                stroke="#33f20d"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={formatDate}
+                stroke="#6B7280"
+                style={{ fontSize: '10px', fontWeight: 'bold' }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
-
-              {/* Data points */}
-              {data.map((item, index) => {
-                const x = (index / (data.length - 1)) * chartWidth;
-                const y = chartHeight - (item.amount / maxAmount) * (chartHeight - 50);
-                return (
-                  <circle key={index} cx={x} cy={y} r="4" fill="#33f20d">
-                    <title>₹{item.amount.toFixed(2)}</title>
-                  </circle>
-                );
-              })}
-            </svg>
-
-            {/* Grid lines */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="border-b border-gray-500 w-full"></div>
-              ))}
-            </div>
-
-            {/* Date labels */}
-            <div className="absolute -bottom-6 left-0 right-0 flex justify-between text-[10px] font-bold uppercase tracking-tighter text-gray-500">
-              {getDateLabels().map((item, index) => (
-                <span key={index}>{formatDate(item.date)}</span>
-              ))}
-            </div>
-          </>
+              <YAxis 
+                tickFormatter={formatCurrency}
+                stroke="#6B7280"
+                style={{ fontSize: '10px', fontWeight: 'bold' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1a1a1a', 
+                  border: '1px solid #33f20d20',
+                  borderRadius: '8px',
+                  color: '#fff'
+                }}
+                labelFormatter={(label) => formatDate(String(label))}
+                formatter={(value) => [`₹${Number(value || 0).toFixed(2)}`, 'Revenue']}
+                cursor={{ fill: 'rgba(51, 242, 13, 0.1)' }}
+              />
+              <Bar 
+                dataKey="amount" 
+                fill="url(#barGradient)"
+                radius={[8, 8, 0, 0]}
+                maxBarSize={60}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         )}
       </div>
     </div>

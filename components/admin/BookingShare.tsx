@@ -81,16 +81,16 @@ export default function BookingShare() {
         <>
           {/* Doughnut Chart */}
           <div className="relative w-48 h-48 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
               {/* Background circle */}
               <circle
                 className="text-primary/10"
-                cx="96"
-                cy="96"
+                cx={96}
+                cy={96}
                 fill="transparent"
-                r="80"
+                r={80}
                 stroke="currentColor"
-                strokeWidth="20"
+                strokeWidth={20}
               />
               
               {/* Dynamic segments */}
@@ -106,14 +106,14 @@ export default function BookingShare() {
                 return (
                   <circle
                     key={item.sport}
-                    cx="96"
-                    cy="96"
+                    cx={96}
+                    cy={96}
                     fill="transparent"
-                    r="80"
+                    r={80}
                     stroke={strokeColor}
                     strokeDasharray={circumference}
                     strokeDashoffset={circumference - offset}
-                    strokeWidth="20"
+                    strokeWidth={20}
                     style={{
                       strokeDasharray: `${segmentLength} ${circumference}`,
                     }}

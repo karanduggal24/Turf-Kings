@@ -1,10 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+export default function AdminSidebar({ isMobileOpen = false, onMobileClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const { user, signOut } = useAuthStore();
 
@@ -16,10 +22,15 @@ export default function AdminSidebar() {
     { name: 'Revenue', href: '/admin/revenue', icon: 'payments', exact: false },
   ];
 
-
   const handleLogout = async () => {
     await signOut();
     window.location.href = '/login';
+  };
+
+  const handleLinkClick = () => {
+    if (onMobileClose) {
+      onMobileClose();
+    }
   };
 
   const userInitials = (user?.user_metadata?.full_name || user?.email || 'A')
@@ -29,11 +40,11 @@ export default function AdminSidebar() {
     .toUpperCase()
     .slice(0, 2);
 
-  return (
-    <aside className="w-64 bg-gradient-to-b from-[#132210] to-[#1a2e16] border-r border-primary/10 flex-shrink-0 flex flex-col">
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div className="p-6">
-        <Link href="/" className="flex items-center justify-start cursor-pointer">
+        <Link href="/" className="flex items-center justify-start cursor-pointer" onClick={handleLinkClick}>
           <div className="w-40 h-16 flex items-center justify-center">
             <img 
               src="/Dark-Logo.svg" 
@@ -52,6 +63,7 @@ export default function AdminSidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleLinkClick}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
                 isActive
                   ? 'bg-primary/10 text-primary'
@@ -94,6 +106,39 @@ export default function AdminSidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 bg-linear-to-b from-[#132210] to-[#1a2e16] border-r border-primary/10 shrink-0 flex-col">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+          onClick={onMobileClose}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <aside 
+        className={`lg:hidden fixed top-0 left-0 bottom-0 w-64 bg-linear-to-b from-[#132210] to-[#1a2e16] border-r border-primary/10 z-50 flex flex-col transform transition-transform duration-300 ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Close button for mobile */}
+        <button
+          onClick={onMobileClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-primary lg:hidden"
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

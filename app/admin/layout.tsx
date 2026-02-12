@@ -15,6 +15,7 @@ export default function AdminLayout({
   const { user, loading: authLoading } = useAuthStore();
   const [role, setRole] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     async function checkAdminAccess() {
@@ -35,7 +36,6 @@ export default function AdminLayout({
           .single();
 
         if (error || !userData) {
-          console.error('Error fetching user role:', error);
           router.push('/');
           return;
         }
@@ -47,7 +47,6 @@ export default function AdminLayout({
 
         setRole((userData as any).role);
       } catch (error) {
-        console.error('Error checking admin access:', error);
         router.push('/');
       } finally {
         setChecking(false);
@@ -74,10 +73,31 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen flex overflow-hidden bg-black">
-      <AdminSidebar />
+      <AdminSidebar 
+        isMobileOpen={isMobileMenuOpen}
+        onMobileClose={() => setIsMobileMenuOpen(false)}
+      />
       
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-black">
+        {/* Mobile Header with Hamburger */}
+        <div className="lg:hidden sticky top-0 z-30 bg-black/95 backdrop-blur-sm border-b border-primary/10 px-4 py-3 flex items-center justify-between">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-3xl">menu</span>
+          </button>
+          <div className="flex items-center gap-2">
+            <img 
+              src="/Dark-Logo.svg" 
+              alt="TurfKings" 
+              className="h-8 w-auto"
+            />
+          </div>
+          <div className="w-8"></div>
+        </div>
+
         {children}
       </main>
     </div>

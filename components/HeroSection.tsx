@@ -1,11 +1,36 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AnimatedText from './AnimatedText';
 import DateSelector from './DateSelector';
 
 export default function HeroSection() {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [location, setLocation] = useState('');
+
+  const handleSearch = () => {
+    // Navigate to turfs page with optional filters
+    const params = new URLSearchParams();
+    
+    if (location) {
+      params.append('city', location);
+    }
+    
+    if (selectedDate) {
+      params.append('date', selectedDate.toISOString().split('T')[0]);
+    }
+    
+    const queryString = params.toString();
+    router.push(`/turfs${queryString ? `?${queryString}` : ''}`);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <section className="relative w-full min-h-[80vh] flex items-center justify-center px-4 py-20 bg-black">
@@ -40,6 +65,9 @@ export default function HeroSection() {
               className="w-full bg-transparent border-none text-white placeholder-gray-400 focus:ring-0 text-sm md:text-base p-0 outline-none" 
               placeholder="Where are you playing?" 
               type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              onKeyPress={handleKeyPress}
             />
           </div>
           <div className="hidden md:block w-px h-8 bg-surface-highlight"></div>
@@ -50,7 +78,10 @@ export default function HeroSection() {
             className="flex-1"
           />
           <div className="p-1">
-            <button className="w-full md:w-auto h-12 md:h-14 px-8 rounded-xl bg-primary hover:bg-primary-hover text-black font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-105 neon-glow-hover">
+            <button 
+              onClick={handleSearch}
+              className="w-full md:w-auto h-12 md:h-14 px-8 rounded-xl bg-primary hover:bg-primary-hover text-black font-bold text-base flex items-center justify-center gap-2 transition-all hover:scale-105 neon-glow-hover"
+            >
               <span className="material-symbols-outlined">search</span>
               <span>Search</span>
             </button>

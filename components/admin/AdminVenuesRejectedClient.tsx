@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import RejectedTurfsTable from './RejectedTurfsTable';
 import VenuesSubNav from './VenuesSubNav';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function AdminVenuesRejectedClient() {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   return (
     <>
@@ -49,7 +51,7 @@ export default function AdminVenuesRejectedClient() {
 
       {/* Content */}
       <div className="p-6 lg:p-10 pt-0">
-        <RejectedTurfsTable searchQuery={searchQuery} />
+        <RejectedTurfsTable searchQuery={debouncedSearchQuery} />
       </div>
     </>
   );

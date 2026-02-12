@@ -46,6 +46,10 @@ export const useBookingsStore = create<BookingsState>()(
         set({ loading: true, error: null }, false, 'fetchBookings/start')
 
         try {
+          // Get auth token
+          const { supabase } = await import('@/lib/supabase');
+          const { data: { session } } = await supabase.auth.getSession();
+          
           // Build query string
           const searchParams = new URLSearchParams()
           if (params) {
@@ -56,7 +60,16 @@ export const useBookingsStore = create<BookingsState>()(
             })
           }
 
-          const response = await fetch(`/api/bookings?${searchParams.toString()}`)
+          const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+          };
+
+          if (session?.access_token) {
+            headers['Authorization'] = `Bearer ${session.access_token}`;
+          }
+
+          const url = `/api/bookings?${searchParams.toString()}`;
+          const response = await fetch(url, { headers })
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)

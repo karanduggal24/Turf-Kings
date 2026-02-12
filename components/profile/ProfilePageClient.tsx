@@ -36,16 +36,16 @@ export default function ProfilePageClient() {
       return;
     }
 
-    // Fetch user bookings only once
-    if (user && !hasFetchedBookings && bookings.length === 0) {
-      fetchBookings({ user_id: user.id });
+    // Fetch user bookings - force refresh to bypass cache
+    if (user && !hasFetchedBookings) {
+      fetchBookings({ user_id: user.id }, true); // Force refresh
       setHasFetchedBookings(true);
     }
     
     if (user) {
       setIsLoading(false);
     }
-  }, [user, authLoading, router, fetchBookings, hasFetchedBookings, bookings.length, hasCheckedAuth]);
+  }, [user, authLoading, router, fetchBookings, hasFetchedBookings, hasCheckedAuth]);
 
   // Show loading while auth is being checked
   if (authLoading || (isLoading && !hasCheckedAuth)) {
@@ -86,13 +86,15 @@ export default function ProfilePageClient() {
   // Filter bookings
   const now = new Date();
   const upcomingBookings = bookings.filter(b => {
-    const bookingDate = new Date(b.booking_date);
-    return bookingDate >= now && b.status !== 'cancelled' && b.status !== 'completed';
+    // Combine date and time for accurate comparison
+    const bookingDateTime = new Date(`${b.booking_date}T${b.start_time}`);
+    return bookingDateTime >= now && b.status !== 'cancelled' && b.status !== 'completed';
   });
 
   const pastBookings = bookings.filter(b => {
-    const bookingDate = new Date(b.booking_date);
-    return bookingDate < now || b.status === 'completed' || b.status === 'cancelled';
+    // Combine date and time for accurate comparison
+    const bookingDateTime = new Date(`${b.booking_date}T${b.start_time}`);
+    return bookingDateTime < now || b.status === 'completed' || b.status === 'cancelled';
   });
 
   const displayedBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
@@ -111,7 +113,9 @@ export default function ProfilePageClient() {
   // Manual refresh function
   const handleRefreshBookings = () => {
     if (user) {
+      setHasFetchedBookings(false); // Reset the flag
       fetchBookings({ user_id: user.id }, true); // Force refresh
+      setHasFetchedBookings(true);
     }
   };
 

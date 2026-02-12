@@ -9,7 +9,11 @@ export async function GET(
   const { id } = await params
   
   try {
-    const { data: turf, error } = await supabase
+    // Check if request is from admin (has admin query param)
+    const { searchParams } = new URL(request.url);
+    const isAdmin = searchParams.get('admin') === 'true';
+
+    let query = supabase
       .from('turfs')
       .select(`
         *,
@@ -22,10 +26,16 @@ export async function GET(
           user:users(full_name)
         )
       `)
-      .eq('id', id)
-      .eq('is_active', true)
-      .eq('approval_status', 'approved')  // Only show approved turfs
-      .single()
+      .eq('id', id);
+
+    // Only filter by approval status if not admin
+    if (!isAdmin) {
+      query = query
+        .eq('is_active', true)
+        .eq('approval_status', 'approved');
+    }
+
+    const { data: turf, error } = await query.single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 404 })
@@ -61,6 +71,35 @@ export async function PUT(
     }
 
     return NextResponse.json({ turf })
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const supabase = await createServerSupabaseClient()
+  const { id } = await params
+  
+  try {
+    const body = await request.json()
+    const { data: turf, error } = await supabase
+      .from('turfs')
+      .update(body)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    return NextResponse.json({ success: true, turf })
   } catch (error) {
     return NextResponse.json(
       { error: 'Internal server error' },

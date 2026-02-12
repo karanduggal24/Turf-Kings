@@ -4,7 +4,7 @@ import type { Turf } from '@/app/constants/turf-types';
 import TurfHero from './detail/TurfHero';
 import TurfAbout from './detail/TurfAbout';
 import TurfLocation from './detail/TurfLocation';
-import BookingWidget from './detail/BookingWidget';
+import BookingWidget from './detail/BookingWidgetNew';
 
 interface TurfDetailClientProps {
   turf: Turf;

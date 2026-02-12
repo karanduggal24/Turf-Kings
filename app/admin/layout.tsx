@@ -40,12 +40,12 @@ export default function AdminLayout({
           return;
         }
 
-        if (userData.role !== 'admin') {
+        if ((userData as any).role !== 'admin') {
           router.push('/');
           return;
         }
 
-        setRole(userData.role);
+        setRole((userData as any).role);
       } catch (error) {
         console.error('Error checking admin access:', error);
         router.push('/');

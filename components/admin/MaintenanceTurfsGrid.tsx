@@ -121,6 +121,14 @@ export default function MaintenanceTurfsGrid({ searchQuery, onRefresh }: Mainten
                 INACTIVE
               </span>
             </div>
+            <div className="absolute top-4 right-4 flex gap-2">
+              <a
+                href={`/admin/venues/edit/${turf.id}`}
+                className="w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-primary hover:text-black transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">edit</span>
+              </a>
+            </div>
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
             <div className="absolute bottom-4 left-4">
               <h3 className="text-white font-bold text-lg">{turf.name}</h3>

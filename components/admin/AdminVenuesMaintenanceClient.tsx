@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import MaintenanceTurfsGrid from './MaintenanceTurfsGrid';
 import VenuesSubNav from './VenuesSubNav';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function AdminVenuesMaintenanceClient() {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRefresh = () => {
@@ -54,7 +56,7 @@ export default function AdminVenuesMaintenanceClient() {
 
       {/* Content */}
       <div className="p-6 lg:p-10 pt-0">
-        <MaintenanceTurfsGrid key={refreshKey} searchQuery={searchQuery} onRefresh={handleRefresh} />
+        <MaintenanceTurfsGrid key={refreshKey} searchQuery={debouncedSearchQuery} onRefresh={handleRefresh} />
       </div>
     </>
   );

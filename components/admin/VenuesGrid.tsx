@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface Turf {
   id: string;
@@ -29,15 +30,23 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
   useEffect(() => {
     fetchTurfs();
-  }, [page, searchQuery]);
+  }, [page, debouncedSearchQuery]);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchQuery]);
 
   async function fetchTurfs() {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/admin/venues?page=${page}&limit=6&search=${encodeURIComponent(searchQuery)}`
+        `/api/admin/venues?page=${page}&limit=6&search=${encodeURIComponent(debouncedSearchQuery)}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -131,9 +140,12 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
                 </span>
               </div>
               <div className="absolute top-4 right-4 flex gap-2">
-                <button className="w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-primary hover:text-black transition-colors">
+                <a
+                  href={`/admin/venues/edit/${turf.id}`}
+                  className="w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-primary hover:text-black transition-colors"
+                >
                   <span className="material-symbols-outlined text-sm">edit</span>
-                </button>
+                </a>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
               <div className="absolute bottom-4 left-4">

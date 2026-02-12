@@ -16,9 +16,6 @@ export default function AdminSidebar() {
     { name: 'Revenue', href: '/admin/revenue', icon: 'payments', exact: false },
   ];
 
-  const systemLinks = [
-    { name: 'Settings', href: '/admin/settings', icon: 'settings' },
-  ];
 
   const handleLogout = async () => {
     await signOut();
@@ -70,24 +67,6 @@ export default function AdminSidebar() {
         <div className="pt-8 pb-4 px-4 uppercase text-[10px] font-bold tracking-widest text-gray-500">
           System
         </div>
-
-        {systemLinks.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-gray-400 hover:text-primary hover:bg-primary/5'
-              }`}
-            >
-              <span className="material-symbols-outlined">{item.icon}</span>
-              {item.name}
-            </Link>
-          );
-        })}
 
         <button
           onClick={handleLogout}

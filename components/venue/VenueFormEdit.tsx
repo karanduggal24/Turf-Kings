@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageUpload from '@/components/venue/ImageUpload';
 
-interface VenueFormProps {
-  userId: string;
+interface VenueFormEditProps {
+  turf: any;
 }
 
 const SPORTS = [
@@ -23,7 +23,7 @@ const AMENITIES = [
   { id: 'drinking_water', label: 'Drinking Water', icon: 'water_drop' },
 ];
 
-export default function VenueForm({ userId }: VenueFormProps) {
+export default function VenueFormEdit({ turf }: VenueFormEditProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -43,10 +43,26 @@ export default function VenueForm({ userId }: VenueFormProps) {
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
+  // Initialize form with turf data
+  useEffect(() => {
+    if (turf) {
+      setFormData({
+        name: turf.name || '',
+        description: turf.description || '',
+        location: turf.location || '',
+        city: turf.city || '',
+        state: turf.state || '',
+        phone: turf.phone || '',
+        pricePerHour: turf.price_per_hour?.toString() || '',
+        sportType: turf.sport_type || 'football',
+        amenities: turf.amenities || [],
+        images: turf.images || [],
+      });
+    }
+  }, [turf]);
+
   const validatePhone = (phone: string): boolean => {
-    // Remove all non-digit characters
     const cleaned = phone.replace(/\D/g, '');
-    // Check if it's exactly 10 digits
     return cleaned.length === 10;
   };
 
@@ -58,7 +74,6 @@ export default function VenueForm({ userId }: VenueFormProps) {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    // Name validation
     if (!formData.name.trim()) {
       errors.name = 'Venue name is required';
     } else if (formData.name.trim().length < 3) {
@@ -67,42 +82,36 @@ export default function VenueForm({ userId }: VenueFormProps) {
       errors.name = 'Venue name must be less than 100 characters';
     }
 
-    // Location validation
     if (!formData.location.trim()) {
       errors.location = 'Address is required';
     } else if (formData.location.trim().length < 5) {
       errors.location = 'Address must be at least 5 characters';
     }
 
-    // City validation
     if (!formData.city.trim()) {
       errors.city = 'City is required';
     } else if (!/^[a-zA-Z\s]+$/.test(formData.city)) {
       errors.city = 'City name should only contain letters';
     }
 
-    // State validation
     if (!formData.state.trim()) {
       errors.state = 'State is required';
     } else if (!/^[a-zA-Z\s]+$/.test(formData.state)) {
       errors.state = 'State name should only contain letters';
     }
 
-    // Phone validation
     if (!formData.phone.trim()) {
       errors.phone = 'Contact phone is required';
     } else if (!validatePhone(formData.phone)) {
       errors.phone = 'Phone number must be exactly 10 digits';
     }
 
-    // Price validation
     if (!formData.pricePerHour) {
       errors.pricePerHour = 'Price per hour is required';
     } else if (!validatePrice(formData.pricePerHour)) {
       errors.pricePerHour = 'Price must be between ₹1 and ₹100,000';
     }
 
-    // Images validation
     if (formData.images.length < 1) {
       errors.images = 'Please upload at least 1 image';
     } else if (formData.images.length > 10) {
@@ -116,7 +125,6 @@ export default function VenueForm({ userId }: VenueFormProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear validation error for this field
     if (validationErrors[name]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -128,10 +136,8 @@ export default function VenueForm({ userId }: VenueFormProps) {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow only digits, spaces, +, and -
     const cleaned = value.replace(/[^\d\s+-]/g, '');
     setFormData(prev => ({ ...prev, phone: cleaned }));
-    // Clear validation error
     if (validationErrors.phone) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -156,7 +162,6 @@ export default function VenueForm({ userId }: VenueFormProps) {
 
   const handleImagesChange = (images: string[]) => {
     setFormData(prev => ({ ...prev, images }));
-    // Clear validation error
     if (validationErrors.images) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -170,7 +175,6 @@ export default function VenueForm({ userId }: VenueFormProps) {
     e.preventDefault();
     setError('');
 
-    // Validate form
     if (!validateForm()) {
       setError('Please fix the validation errors below');
       return;
@@ -179,27 +183,33 @@ export default function VenueForm({ userId }: VenueFormProps) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/turfs', {
-        method: 'POST',
+      const response = await fetch(`/api/admin/turfs/${turf.id}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
+          name: formData.name,
+          description: formData.description,
+          location: formData.location,
+          city: formData.city,
+          state: formData.state,
+          phone: formData.phone,
           price_per_hour: parseFloat(formData.pricePerHour),
           sport_type: formData.sportType,
-          owner_id: userId,
+          amenities: formData.amenities,
+          images: formData.images,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create venue');
+        throw new Error(data.error || 'Failed to update venue');
       }
 
-      // Redirect to success page
-      router.push(`/list-venue/success?id=${data.turf.id}`);
+      // Redirect back to venues page
+      router.push('/admin/venues');
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -208,7 +218,7 @@ export default function VenueForm({ userId }: VenueFormProps) {
   };
 
   return (
-    <div className="bg-surface-dark/50 border border-primary/10 rounded-xl shadow-xl p-8">
+    <div className="bg-white/5 border border-primary/10 rounded-xl shadow-xl p-8">
       <form onSubmit={handleSubmit} className="space-y-8">
         {error && (
           <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 text-red-500 text-sm">
@@ -436,7 +446,7 @@ export default function VenueForm({ userId }: VenueFormProps) {
         <div className="flex items-center justify-between pt-6 border-t border-primary/10">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push('/admin/venues')}
             className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-medium"
           >
             <span className="material-symbols-outlined">arrow_back</span>
@@ -448,8 +458,8 @@ export default function VenueForm({ userId }: VenueFormProps) {
             disabled={loading}
             className="px-10 py-3 rounded-lg bg-primary text-black font-black hover:shadow-[0_0_20px_rgba(51,242,13,0.3)] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
           >
-            {loading ? 'Submitting...' : 'List Venue'}
-            {!loading && <span className="material-symbols-outlined">arrow_forward</span>}
+            {loading ? 'Updating...' : 'Update Venue'}
+            {!loading && <span className="material-symbols-outlined">check</span>}
           </button>
         </div>
       </form>

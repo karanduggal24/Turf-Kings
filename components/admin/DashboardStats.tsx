@@ -32,23 +32,15 @@ export default function DashboardStats() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/stats');
+      const { fetchAdminAPI } = await import('@/lib/admin-api');
+      const response = await fetchAdminAPI('/api/admin/stats');
       const data = await response.json();
+      
       if (data.stats) {
         setStats(data.stats);
       }
     } catch (error) {
-      // Use mock data if API fails
-      setStats({
-        monthlyRevenue: 42850,
-        revenueChange: 12.5,
-        activeTurfs: 156,
-        turfsChange: 4,
-        dailyBookings: 1204,
-        bookingsChange: 18,
-        newRegistrations: 8492,
-        registrationsChange: 2400,
-      });
+      // Silent fail
     } finally {
       setLoading(false);
     }

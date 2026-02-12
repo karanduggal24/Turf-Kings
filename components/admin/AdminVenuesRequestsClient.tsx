@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import PendingTurfsTable from './PendingTurfsTable';
 import VenuesSubNav from './VenuesSubNav';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function AdminVenuesRequestsClient() {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   return (
     <>
@@ -49,7 +51,7 @@ export default function AdminVenuesRequestsClient() {
 
       {/* Content */}
       <div className="p-6 lg:p-10 pt-0">
-        <PendingTurfsTable searchQuery={searchQuery} />
+        <PendingTurfsTable searchQuery={debouncedSearchQuery} />
       </div>
     </>
   );

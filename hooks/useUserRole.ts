@@ -24,7 +24,7 @@ export function useUserRole() {
         .single();
 
       if (data && !error) {
-        setRole(data.role);
+        setRole((data as any).role as UserRole);
       }
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface BookingsFiltersProps {
   onFilterChange?: (filters: {
@@ -14,20 +15,23 @@ export default function BookingsFilters({ onFilterChange }: BookingsFiltersProps
   const [search, setSearch] = useState('');
   const [sport, setSport] = useState('');
   const [status, setStatus] = useState('');
+  const debouncedSearch = useDebounce(search, 500);
+
+  // Trigger filter change when debounced search changes
+  useEffect(() => {
+    onFilterChange?.({ search: debouncedSearch, sport, status });
+  }, [debouncedSearch, sport, status]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    onFilterChange?.({ search: value, sport, status });
   };
 
   const handleSportChange = (value: string) => {
     setSport(value);
-    onFilterChange?.({ search, sport: value, status });
   };
 
   const handleStatusChange = (value: string) => {
     setStatus(value);
-    onFilterChange?.({ search, sport, status: value });
   };
 
   return (

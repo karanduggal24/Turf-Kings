@@ -369,7 +369,7 @@ export default function VenueFormEdit({ turf }: VenueFormEditProps) {
               name="phone"
               value={formData.phone}
               onChange={handlePhoneChange}
-              maxLength={15}
+              maxLength={10}
               className={`w-full px-4 py-3 rounded-lg bg-black/40 border ${
                 validationErrors.phone ? 'border-red-500' : 'border-primary/20'
               } focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white`}

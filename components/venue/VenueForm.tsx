@@ -359,11 +359,11 @@ export default function VenueForm({ userId }: VenueFormProps) {
               name="phone"
               value={formData.phone}
               onChange={handlePhoneChange}
-              maxLength={15}
+              maxLength={10}
               className={`w-full px-4 py-3 rounded-lg bg-black/40 border ${
                 validationErrors.phone ? 'border-red-500' : 'border-primary/20'
               } focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white`}
-              placeholder="e.g. +91 98765 43210"
+              placeholder="e.g. 9876543210"
               required
             />
             {validationErrors.phone && (

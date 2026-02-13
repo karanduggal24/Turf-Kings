@@ -101,8 +101,9 @@ export default function SignupForm({ onError }: SignupFormProps) {
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              maxLength={10}
               className="w-full bg-black/40 border border-surface-highlight rounded-lg py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-              placeholder="+91 98765 43210"
+              placeholder="98765 43210"
               required
             />
           </div>

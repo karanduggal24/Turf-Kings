@@ -304,3 +304,57 @@ body {
 .scrollbar-thumb-primary::-webkit-scrollbar-thumb {
   background: var(--primary);
 }
+
+/* Print Styles */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-container {
+    max-width: 100% !important;
+    padding: 20px !important;
+    background: white !important;
+    min-height: auto !important;
+  }
+  
+  .print-section {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  .print-text,
+  .print-text-gray,
+  .print-primary,
+  h1, h2, h3, h4, h5, h6, p, span, div, a {
+    color: black !important;
+  }
+  
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  
+  /* Hide all navigation, footer, and interactive elements */
+  nav, footer, button, .no-print {
+    display: none !important;
+  }
+  
+  /* Ensure content fits on page */
+  .print-break-avoid {
+    page-break-inside: avoid;
+  }
+}

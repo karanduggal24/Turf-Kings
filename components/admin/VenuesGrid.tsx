@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import Button from '@/components/common/Button';
 
 interface Turf {
   id: string;
@@ -95,19 +97,7 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
   };
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="bg-white/5 border border-primary/5 rounded-xl overflow-hidden animate-pulse">
-            <div className="h-48 bg-gray-700"></div>
-            <div className="p-5 space-y-4">
-              <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingSpinner size="lg" text="Loading venues..." />;
   }
 
   return (
@@ -227,13 +217,15 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
           <span className="font-bold text-white">{total}</span> venues
         </p>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="p-2 border border-primary/20 rounded-lg hover:bg-primary/10 disabled:opacity-50 transition-all"
+            variant="ghost"
+            size="sm"
+            icon="chevron_left"
           >
-            <span className="material-symbols-outlined text-sm">chevron_left</span>
-          </button>
+            
+          </Button>
           {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map((pageNum) => (
             <button
               key={pageNum}
@@ -247,13 +239,15 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
               {pageNum}
             </button>
           ))}
-          <button
+          <Button
             onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="p-2 border border-primary/20 rounded-lg hover:bg-primary/10 disabled:opacity-50 transition-all"
+            variant="ghost"
+            size="sm"
+            icon="chevron_right"
           >
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-          </button>
+            
+          </Button>
         </div>
       </div>
     </>

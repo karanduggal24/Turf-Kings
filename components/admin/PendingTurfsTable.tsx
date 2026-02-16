@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import Badge from '@/components/common/Badge';
+import Button from '@/components/common/Button';
 
 interface PendingTurf {
   id: string;
@@ -130,8 +133,8 @@ export default function PendingTurfsTable({ searchQuery }: PendingTurfsTableProp
 
   if (loading) {
     return (
-      <div className="bg-white/5 border border-primary/10 rounded-xl p-12 flex items-center justify-center">
-        <span className="animate-spin text-4xl">⚡</span>
+      <div className="bg-white/5 border border-primary/10 rounded-xl p-12">
+        <LoadingSpinner size="md" />
       </div>
     );
   }
@@ -202,24 +205,26 @@ export default function PendingTurfsTable({ searchQuery }: PendingTurfsTableProp
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e?.stopPropagation();
                           handleReject(turf.id);
                         }}
-                        className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-bold text-xs px-4 py-2 rounded-lg transition-all"
                       >
                         Reject
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e?.stopPropagation();
                           handleApprove(turf.id);
                         }}
-                        className="bg-primary/10 hover:bg-primary text-primary hover:text-black font-bold text-xs px-4 py-2 rounded-lg transition-all"
                       >
                         Approve
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -366,18 +371,18 @@ export default function PendingTurfsTable({ searchQuery }: PendingTurfsTableProp
 
             {/* Modal Footer */}
             <div className="sticky bottom-0 bg-gray-900 border-t border-primary/10 px-6 py-4 flex items-center justify-end gap-3">
-              <button
+              <Button
+                variant="danger"
                 onClick={() => handleReject(selectedTurf.id)}
-                className="px-6 py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-bold rounded-lg transition-all"
               >
                 Reject Venue
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={() => handleApprove(selectedTurf.id)}
-                className="px-6 py-3 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg transition-all"
               >
                 Approve Venue
-              </button>
+              </Button>
             </div>
           </div>
         </div>

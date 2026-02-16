@@ -1,6 +1,7 @@
 'use client';
 
 import type { FilterState } from './TurfsPageClient';
+import Button from '@/components/common/Button';
 
 interface TurfsFiltersProps {
   filters: FilterState;
@@ -183,12 +184,14 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
           </div>
         </div>
 
-        <button
+        <Button
           onClick={resetFilters}
-          className="mt-4 w-full py-3 rounded-lg border border-primary/20 text-primary font-bold text-sm hover:bg-primary hover:text-black transition-all"
+          variant="secondary"
+          fullWidth
+          className="mt-4"
         >
           Reset All Filters
-        </button>
+        </Button>
       </div>
     </aside>
   );

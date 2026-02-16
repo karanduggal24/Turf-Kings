@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import Badge from '@/components/common/Badge';
+import SearchInput from '@/components/common/SearchInput';
 
 interface User {
   id: string;

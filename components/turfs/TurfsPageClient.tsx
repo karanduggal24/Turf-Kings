@@ -4,6 +4,7 @@ import { useState } from 'react';
 import TurfsGrid from './TurfsGrid';
 import TurfsFilters from './TurfsFilters';
 import type { Turf } from '@/app/constants/turf-types';
+import Button from '@/components/common/Button';
 
 interface TurfsPageClientProps {
   initialTurfs: Turf[];
@@ -27,13 +28,13 @@ export default function TurfsPageClient({ initialTurfs, initialError }: TurfsPag
   return (
     <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 md:px-10 lg:px-20 py-8">
       {/* Mobile Filter Button */}
-      <button
+      <Button
         onClick={() => setIsFilterOpen(true)}
-        className="lg:hidden fixed bottom-6 right-6 z-40 bg-primary text-black px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 hover:bg-primary-hover transition-all"
+        icon="tune"
+        className="lg:hidden fixed bottom-6 right-6 z-40 shadow-lg"
       >
-        <span className="material-symbols-outlined">tune</span>
         Filters
-      </button>
+      </Button>
 
       {/* Mobile Filter Overlay */}
       {isFilterOpen && (
@@ -61,12 +62,13 @@ export default function TurfsPageClient({ initialTurfs, initialError }: TurfsPag
 
             {/* Apply Button - Sticky at bottom */}
             <div className="sticky bottom-0 bg-surface-dark border-t border-surface-highlight p-4">
-              <button
+              <Button
                 onClick={() => setIsFilterOpen(false)}
-                className="w-full bg-primary text-black py-3 rounded-xl font-bold uppercase tracking-tighter text-sm neon-glow-hover transition-all transform hover:scale-[1.02] active:scale-95"
+                fullWidth
+                className="uppercase tracking-tighter neon-glow-hover"
               >
                 Apply Filters
-              </button>
+              </Button>
             </div>
           </div>
         </div>

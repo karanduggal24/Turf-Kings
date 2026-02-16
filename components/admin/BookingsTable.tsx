@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Booking } from '@/app/constants/booking-types';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import Badge from '@/components/common/Badge';
 
 interface BookingWithRelations extends Omit<Booking, 'turf'> {
   user?: {
@@ -85,8 +87,8 @@ export default function BookingsTable() {
 
   if (loading) {
     return (
-      <div className="bg-white/5 backdrop-blur-md border border-primary/10 rounded-xl p-12 flex items-center justify-center">
-        <span className="animate-spin text-4xl">⚡</span>
+      <div className="bg-white/5 backdrop-blur-md border border-primary/10 rounded-xl p-12">
+        <LoadingSpinner size="md" />
       </div>
     );
   }

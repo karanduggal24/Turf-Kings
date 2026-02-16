@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import VenueForm from '@/components/venue/VenueForm';
 import { useAuthStore } from '@/stores/authStore';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function ListVenueClient() {
   const router = useRouter();
@@ -41,10 +42,7 @@ export default function ListVenueClient() {
       <div className="min-h-screen flex flex-col bg-black">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="animate-spin text-6xl">⚡</span>
-            <p className="text-white text-lg">Loading...</p>
-          </div>
+          <LoadingSpinner size="xl" text="Loading..." />
         </main>
         <Footer />
       </div>
@@ -57,10 +55,7 @@ export default function ListVenueClient() {
       <div className="min-h-screen flex flex-col bg-black">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="animate-spin text-6xl">⚡</span>
-            <p className="text-white text-lg">Redirecting...</p>
-          </div>
+          <LoadingSpinner size="xl" text="Redirecting..." />
         </main>
         <Footer />
       </div>

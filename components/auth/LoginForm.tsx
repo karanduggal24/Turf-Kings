@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 import ForgotPasswordModal from './ForgotPasswordModal';
+import Button from '@/components/common/Button';
 
 interface LoginFormProps {
   onError: (error: string) => void;
@@ -129,20 +130,15 @@ export default function LoginForm({ onError, onSuccess }: LoginFormProps) {
         </div>
 
         {/* Submit Button */}
-        <button
+        <Button
           type="submit"
-          disabled={loading}
-          className="w-full bg-primary hover:bg-primary-hover text-black font-black uppercase tracking-widest py-4 rounded-lg shadow-lg shadow-primary/10 transition-all active:scale-[0.98] mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={loading}
+          fullWidth
+          size="lg"
+          className="mt-4 uppercase tracking-widest shadow-lg shadow-primary/10"
         >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">⚡</span>
-              Processing...
-            </span>
-          ) : (
-            'Enter Arena'
-          )}
-        </button>
+          Enter Arena
+        </Button>
       </form>
 
       {/* Forgot Password Modal */}

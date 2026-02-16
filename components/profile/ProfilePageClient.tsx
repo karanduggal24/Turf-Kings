@@ -9,6 +9,7 @@ import BookingsList from '@/components/profile/BookingsList';
 import ProfileSidebar from '@/components/profile/ProfileSidebar';
 import { useAuthStore } from '@/stores/authStore';
 import { useBookingsStore } from '@/stores/bookingsStore';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function ProfilePageClient() {
   const router = useRouter();
@@ -53,10 +54,7 @@ export default function ProfilePageClient() {
       <div className="min-h-screen flex flex-col bg-black">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="animate-spin text-6xl">⚡</span>
-            <p className="text-white text-lg">Loading profile...</p>
-          </div>
+          <LoadingSpinner size="xl" text="Loading profile..." />
         </main>
         <Footer />
       </div>
@@ -69,10 +67,7 @@ export default function ProfilePageClient() {
       <div className="min-h-screen flex flex-col bg-black">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="animate-spin text-6xl">⚡</span>
-            <p className="text-white text-lg">Redirecting...</p>
-          </div>
+          <LoadingSpinner size="xl" text="Redirecting..." />
         </main>
         <Footer />
       </div>

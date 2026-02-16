@@ -84,3 +84,34 @@ export async function PATCH(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Venue ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Delete the turf
+    const { error } = await supabase
+      .from('turfs')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, message: 'Venue deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting venue:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete venue' },
+      { status: 500 }
+    );
+  }
+}

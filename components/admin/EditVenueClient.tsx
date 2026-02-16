@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import VenueFormEdit from '@/components/venue/VenueFormEdit';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import Button from '@/components/common/Button';
 
 interface EditVenueClientProps {
   turfId: string;
@@ -59,7 +61,7 @@ export default function EditVenueClient({ turfId }: EditVenueClientProps) {
 
         <div className="p-6 lg:p-10 pt-6">
           <div className="bg-white/5 border border-primary/10 rounded-xl p-12 flex items-center justify-center">
-            <span className="animate-spin text-4xl">⚡</span>
+            <LoadingSpinner size="lg" text="Loading venue details..." />
           </div>
         </div>
       </>
@@ -86,12 +88,12 @@ export default function EditVenueClient({ turfId }: EditVenueClientProps) {
           <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-8 text-center">
             <span className="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
             <p className="text-red-500 text-lg font-bold">{error || 'Turf not found'}</p>
-            <button
+            <Button
               onClick={() => router.push('/admin/venues')}
-              className="mt-4 px-6 py-2 bg-primary text-black font-bold rounded-lg hover:brightness-110 transition-all"
+              className="mt-4"
             >
               Back to Venues
-            </button>
+            </Button>
           </div>
         </div>
       </>

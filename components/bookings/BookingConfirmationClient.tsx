@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 import BookingHeader from './BookingHeader';
 import BookingSummarySection from './BookingSummarySection';
 import VenueDetailsSection from './VenueDetailsSection';
@@ -46,7 +47,7 @@ export default function BookingConfirmationClient({ bookingId }: BookingConfirma
       <>
         <Navbar />
         <div className="min-h-screen bg-black flex items-center justify-center">
-          <span className="animate-spin text-4xl">⚡</span>
+          <LoadingSpinner size="md" />
         </div>
         <Footer />
       </>

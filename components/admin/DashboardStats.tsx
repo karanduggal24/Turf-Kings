@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface Stats {
   monthlyRevenue: number;
@@ -78,17 +79,7 @@ export default function DashboardStats() {
   ];
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white/5 backdrop-blur-md border border-primary/10 p-6 rounded-2xl animate-pulse">
-            <div className="h-12 w-12 bg-white/10 rounded-xl mb-4"></div>
-            <div className="h-4 bg-white/10 rounded w-24 mb-2"></div>
-            <div className="h-8 bg-white/10 rounded w-32"></div>
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingSpinner size="lg" text="Loading dashboard stats..." />;
   }
 
   return (

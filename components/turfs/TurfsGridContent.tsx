@@ -2,6 +2,8 @@
 
 import TurfCard from '@/components/TurfCard';
 import type { Turf } from '@/app/constants/turf-types';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import EmptyState from '@/components/common/EmptyState';
 
 interface TurfsGridContentProps {
   turfs: Turf[];
@@ -21,21 +23,18 @@ export default function TurfsGridContent({ turfs, loading, error }: TurfsGridCon
   if (loading) {
     return (
       <div className="flex justify-center items-center py-16">
-        <div className="flex flex-col items-center gap-4">
-          <span className="animate-spin text-6xl">⚡</span>
-          <p className="text-gray-400">Loading turfs...</p>
-        </div>
+        <LoadingSpinner size="lg" text="Loading turfs..." />
       </div>
     );
   }
 
   if (turfs.length === 0) {
     return (
-      <div className="text-center py-16">
-        <span className="material-symbols-outlined text-6xl text-gray-600 mb-4">search_off</span>
-        <h3 className="text-xl font-bold mb-2">No turfs found</h3>
-        <p className="text-gray-400">Try adjusting your filters</p>
-      </div>
+      <EmptyState
+        icon="search_off"
+        title="No turfs found"
+        description="Try adjusting your filters"
+      />
     );
   }
 

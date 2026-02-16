@@ -1,5 +1,6 @@
 import { TurfCardProps } from "@/app/constants/types";
 import Link from "next/link";
+import Button from '@/components/common/Button';
 
 export default function TurfCard({
   sport,
@@ -54,9 +55,9 @@ export default function TurfCard({
               ₹{price}<span className="text-sm font-normal text-gray-400">/hr</span>
             </p>
           </div>
-          <button className="bg-primary hover:bg-primary-hover text-black px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 neon-glow-hover">
+          <Button size="sm" className="neon-glow-hover">
             Book Now
-          </button>
+          </Button>
         </div>
       </div>
     </div>

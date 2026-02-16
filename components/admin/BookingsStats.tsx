@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface StatsData {
   todayBookings: number;
@@ -32,16 +33,7 @@ export default function BookingsStats() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white/5 p-6 rounded-xl border border-primary/10 animate-pulse">
-            <div className="h-4 bg-gray-700 rounded w-1/2 mb-4"></div>
-            <div className="h-8 bg-gray-700 rounded w-1/3"></div>
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingSpinner size="lg" text="Loading booking stats..." />;
   }
 
   return (

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import EmptyState from '@/components/common/EmptyState';
 
 interface TurfRevenue {
   name: string;
@@ -32,19 +34,7 @@ export default function RevenueByTurf() {
   }
 
   if (loading) {
-    return (
-      <div className="bg-white/5 border border-primary/10 p-6 rounded-xl">
-        <div className="h-4 bg-gray-700 rounded w-1/2 mb-4"></div>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse">
-              <div className="h-3 bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-1.5 bg-gray-700 rounded"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <LoadingSpinner size="md" text="Loading revenue data..." />;
   }
 
   return (
@@ -52,7 +42,11 @@ export default function RevenueByTurf() {
       <h3 className="font-bold text-sm text-white mb-4">Revenue by Turf</h3>
       
       {turfs.length === 0 ? (
-        <p className="text-gray-400 text-sm text-center py-4">No revenue data available</p>
+        <EmptyState
+          icon="bar_chart"
+          title="No revenue data available"
+          description="Revenue breakdown will appear once bookings are made"
+        />
       ) : (
         <div className="space-y-4">
           {turfs.map((turf, index) => (

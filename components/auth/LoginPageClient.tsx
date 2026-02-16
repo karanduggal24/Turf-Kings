@@ -8,6 +8,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
 import ErrorMessage from '@/components/auth/ErrorMessage';
 import { useAuthStore } from '@/stores/authStore';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 type AuthMode = 'login' | 'signup';
 
@@ -52,10 +53,7 @@ export default function LoginPageClient() {
       <div className="min-h-screen flex flex-col bg-black">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="animate-spin text-6xl">⚡</span>
-            <p className="text-white text-lg">Loading...</p>
-          </div>
+          <LoadingSpinner size="xl" text="Loading..." />
         </main>
         <Footer />
       </div>

@@ -7,6 +7,7 @@ import VenueBasicInfo from './form/VenueBasicInfo';
 import VenueSportSelector from './form/VenueSportSelector';
 import VenueLocationFields from './form/VenueLocationFields';
 import VenueAmenities from './form/VenueAmenities';
+import Button from '@/components/common/Button';
 
 interface VenueFormProps {
   userId: string;
@@ -218,23 +219,24 @@ export default function VenueForm({ userId }: VenueFormProps) {
         </div>
 
         <div className="flex items-center justify-between pt-6 border-t border-primary/10">
-          <button
+          <Button
             type="button"
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-medium"
+            variant="ghost"
+            icon="arrow_back"
           >
-            <span className="material-symbols-outlined">arrow_back</span>
             Cancel
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="px-10 py-3 rounded-lg bg-primary text-black font-black hover:shadow-[0_0_20px_rgba(51,242,13,0.3)] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
+            loading={loading}
+            icon="arrow_forward"
+            size="lg"
+            className="uppercase tracking-wider shadow-[0_0_20px_rgba(51,242,13,0.3)]"
           >
-            {loading ? 'Submitting...' : 'List Venue'}
-            {!loading && <span className="material-symbols-outlined">arrow_forward</span>}
-          </button>
+            List Venue
+          </Button>
         </div>
       </form>
     </div>

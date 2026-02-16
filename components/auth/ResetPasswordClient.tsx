@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import Button from '@/components/common/Button';
 
 export default function ResetPasswordClient() {
   const [newPassword, setNewPassword] = useState('');
@@ -116,10 +118,7 @@ export default function ResetPasswordClient() {
       <div className="min-h-screen flex flex-col bg-black">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="animate-spin text-6xl">⚡</span>
-            <p className="text-white text-lg">Verifying reset link...</p>
-          </div>
+          <LoadingSpinner size="xl" text="Verifying reset link..." />
         </main>
         <Footer />
       </div>
@@ -235,13 +234,15 @@ export default function ResetPasswordClient() {
               </div>
 
               {/* Submit Button */}
-              <button
+              <Button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-primary hover:bg-primary-hover text-black font-black uppercase tracking-widest py-4 rounded-lg shadow-lg shadow-primary/10 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={loading}
+                fullWidth
+                size="lg"
+                className="uppercase tracking-widest shadow-lg shadow-primary/10"
               >
-                {loading ? 'Updating...' : 'Update Password'}
-              </button>
+                Update Password
+              </Button>
             </form>
           </div>
         </div>

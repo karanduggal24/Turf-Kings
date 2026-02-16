@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { Booking } from '@/app/constants/booking-types';
+import Badge from '@/components/common/Badge';
+import Button from '@/components/common/Button';
 
 interface BookingCardProps {
   booking: Booking;
@@ -23,29 +25,13 @@ export default function BookingCard({ booking, isPast }: BookingCardProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return (
-          <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-primary/20">
-            Confirmed
-          </span>
-        );
+        return <Badge variant="success">Confirmed</Badge>;
       case 'pending':
-        return (
-          <span className="bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-amber-500/20">
-            Pending Pay
-          </span>
-        );
+        return <Badge variant="warning">Pending Pay</Badge>;
       case 'completed':
-        return (
-          <span className="bg-slate-500/10 text-slate-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-slate-500/20">
-            Completed
-          </span>
-        );
+        return <Badge variant="default">Completed</Badge>;
       case 'cancelled':
-        return (
-          <span className="bg-red-500/10 text-red-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-red-500/20">
-            Cancelled
-          </span>
-        );
+        return <Badge variant="danger">Cancelled</Badge>;
       default:
         return null;
     }
@@ -101,17 +87,19 @@ export default function BookingCard({ booking, isPast }: BookingCardProps) {
       <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4">
         {getStatusBadge(booking.status)}
         {booking.status === 'pending' && (
-          <button className="bg-primary text-black text-xs font-bold px-4 py-1.5 rounded uppercase hover:brightness-110 transition-all">
+          <Button size="sm" className="uppercase">
             Pay Now
-          </button>
+          </Button>
         )}
         {booking.status === 'completed' && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.push(`/turfs/${booking.turf_id}`)}
-            className="text-primary text-xs font-bold uppercase hover:underline"
+            className="uppercase"
           >
             Rebook
-          </button>
+          </Button>
         )}
       </div>
     </div>

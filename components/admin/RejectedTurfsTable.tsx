@@ -1,6 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import EmptyState from '@/components/common/EmptyState';
+import Badge from '@/components/common/Badge';
+import Button from '@/components/common/Button';
 
 interface RejectedTurf {
   id: string;
@@ -30,6 +35,9 @@ export default function RejectedTurfsTable({ searchQuery }: RejectedTurfsTablePr
   const [loading, setLoading] = useState(true);
   const [selectedTurf, setSelectedTurf] = useState<RejectedTurf | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [turfToDelete, setTurfToDelete] = useState<RejectedTurf | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchRejectedTurfs();
@@ -82,15 +90,36 @@ export default function RejectedTurfsTable({ searchQuery }: RejectedTurfsTablePr
   }
 
   async function handleDelete(turfId: string) {
-    if (!confirm('Are you sure you want to permanently delete this venue?')) {
-      return;
-    }
+    setIsDeleting(true);
     
-    // For now, just remove from list
-    // In production, you'd want to actually delete from database
-    setTurfs(turfs.filter(t => t.id !== turfId));
-    setShowModal(false);
-    setSelectedTurf(null);
+    try {
+      const response = await fetch('/api/admin/venues', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: turfId }),
+      });
+
+      if (response.ok) {
+        setTurfs(turfs.filter(t => t.id !== turfId));
+        setShowModal(false);
+        setSelectedTurf(null);
+        setShowDeleteModal(false);
+        setTurfToDelete(null);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete venue');
+      }
+    } catch (error) {
+      console.error('Error deleting turf:', error);
+      alert('Failed to delete venue');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function openDeleteModal(turf: RejectedTurf) {
+    setTurfToDelete(turf);
+    setShowDeleteModal(true);
   }
 
   function openModal(turf: RejectedTurf) {
@@ -119,8 +148,8 @@ export default function RejectedTurfsTable({ searchQuery }: RejectedTurfsTablePr
 
   if (loading) {
     return (
-      <div className="bg-white/5 border border-primary/10 rounded-xl p-12 flex items-center justify-center">
-        <span className="animate-spin text-4xl">⚡</span>
+      <div className="bg-white/5 border border-primary/10 rounded-xl p-12">
+        <LoadingSpinner size="md" />
       </div>
     );
   }
@@ -185,30 +214,30 @@ export default function RejectedTurfsTable({ searchQuery }: RejectedTurfsTablePr
                     <span className="text-sm text-gray-400">{formatDate(turf.created_at)}</span>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20">
-                      REJECTED
-                    </span>
+                    <Badge variant="danger" size="md">REJECTED</Badge>
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(turf.id);
+                          e?.stopPropagation();
+                          openDeleteModal(turf);
                         }}
-                        className="bg-gray-500/10 hover:bg-gray-500 text-gray-400 hover:text-white font-bold text-xs px-4 py-2 rounded-lg transition-all"
                       >
                         Delete
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e?.stopPropagation();
                           handleReApprove(turf.id);
                         }}
-                        className="bg-primary/10 hover:bg-primary text-primary hover:text-black font-bold text-xs px-4 py-2 rounded-lg transition-all"
                       >
                         Re-Approve
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -352,22 +381,34 @@ export default function RejectedTurfsTable({ searchQuery }: RejectedTurfsTablePr
 
             {/* Modal Footer */}
             <div className="sticky bottom-0 bg-gray-900 border-t border-primary/10 px-6 py-4 flex items-center justify-end gap-3">
-              <button
-                onClick={() => handleDelete(selectedTurf.id)}
-                className="px-6 py-3 bg-gray-500/10 hover:bg-gray-500 text-gray-400 hover:text-white font-bold rounded-lg transition-all"
+              <Button
+                variant="ghost"
+                onClick={() => openDeleteModal(selectedTurf)}
               >
                 Delete Permanently
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={() => handleReApprove(selectedTurf.id)}
-                className="px-6 py-3 bg-primary hover:bg-primary/90 text-black font-bold rounded-lg transition-all"
               >
                 Re-Approve Venue
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setTurfToDelete(null);
+        }}
+        onConfirm={() => turfToDelete && handleDelete(turfToDelete.id)}
+        venueName={turfToDelete?.name}
+        isDeleting={isDeleting}
+      />
     </>
   );
 }

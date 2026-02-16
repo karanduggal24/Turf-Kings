@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { Booking } from '@/app/constants/booking-types';
 import BookingCard from './BookingCard';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import EmptyState from '@/components/common/EmptyState';
 
 interface BookingsListProps {
   bookings: Booking[];

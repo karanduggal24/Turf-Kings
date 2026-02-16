@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import EmptyState from '@/components/common/EmptyState';
 
 interface Transaction {
   id: string;
@@ -49,24 +51,7 @@ export default function RecentTransactions() {
   };
 
   if (loading) {
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-4 px-1">
-          <h2 className="text-lg font-bold text-white">Recent Transactions</h2>
-        </div>
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="p-4 bg-white/5 border border-primary/5 rounded-lg animate-pulse"
-            >
-              <div className="h-4 bg-gray-700 rounded w-1/2 mb-2"></div>
-              <div className="h-3 bg-gray-700 rounded w-1/3"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <LoadingSpinner size="md" text="Loading transactions..." />;
   }
 
   return (
@@ -77,9 +62,11 @@ export default function RecentTransactions() {
       </div>
 
       {transactions.length === 0 ? (
-        <div className="p-12 bg-white/5 border border-primary/10 rounded-lg text-center text-gray-400">
-          No transactions yet
-        </div>
+        <EmptyState
+          icon="receipt_long"
+          title="No transactions yet"
+          description="Transactions will appear here once bookings are made"
+        />
       ) : (
         <div className="space-y-3">
           {transactions.map((transaction) => (

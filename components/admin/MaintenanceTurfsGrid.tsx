@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import EmptyState from '@/components/common/EmptyState';
 
 interface Turf {
   id: string;
@@ -76,29 +78,16 @@ export default function MaintenanceTurfsGrid({ searchQuery, onRefresh }: Mainten
   };
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white/5 border border-primary/5 rounded-xl overflow-hidden animate-pulse">
-            <div className="h-48 bg-gray-700"></div>
-            <div className="p-5 space-y-4">
-              <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingSpinner size="lg" text="Loading maintenance venues..." />;
   }
 
   if (turfs.length === 0) {
     return (
-      <div className="bg-white/5 border border-primary/10 rounded-xl p-12 text-center">
-        <span className="material-symbols-outlined text-6xl text-gray-600 mb-4">
-          construction
-        </span>
-        <p className="text-gray-400 text-lg">No venues in maintenance mode</p>
-      </div>
+      <EmptyState
+        icon="construction"
+        title="No venues in maintenance mode"
+        description="All venues are currently active and available for booking"
+      />
     );
   }
 

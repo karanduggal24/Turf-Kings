@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface BookingShareData {
   sport: string;
@@ -51,8 +52,7 @@ export default function BookingShare() {
   if (loading) {
     return (
       <div className="bg-white/5 backdrop-blur-md border border-primary/10 p-8 rounded-2xl flex flex-col items-center justify-center min-h-[400px]">
-        <span className="animate-spin text-4xl">⚡</span>
-        <p className="text-gray-400 mt-4">Loading...</p>
+        <LoadingSpinner size="md" text="Loading..." />
       </div>
     );
   }

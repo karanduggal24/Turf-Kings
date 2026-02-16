@@ -50,12 +50,8 @@ export default function LoginPageClient() {
   // Always show loading until we confirm user is not logged in
   if (isChecking || loading || user) {
     return (
-      <div className="min-h-screen flex flex-col bg-black">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center">
-          <LoadingSpinner size="xl" text="Loading..." />
-        </main>
-        <Footer />
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <LoadingSpinner size="xl" text="Loading..." />
       </div>
     );
   }

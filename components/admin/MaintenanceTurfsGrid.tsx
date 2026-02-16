@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
+import Image from 'next/image';
 
 interface Turf {
   id: string;
@@ -100,10 +101,13 @@ export default function MaintenanceTurfsGrid({ searchQuery, onRefresh }: Mainten
         >
           {/* Image */}
           <div className="relative h-48 overflow-hidden">
-            <img
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            <Image
               src={turf.images[0] || '/placeholder-turf.jpg'}
               alt={turf.name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover group-hover:scale-110 transition-transform duration-500"
+              loading="lazy"
             />
             <div className="absolute top-4 left-4 flex items-center gap-2">
               <span className="flex items-center gap-1 bg-gray-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">

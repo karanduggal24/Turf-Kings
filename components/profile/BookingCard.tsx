@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Booking } from '@/app/constants/booking-types';
 import Badge from '@/components/common/Badge';
 import Button from '@/components/common/Button';
+import Image from 'next/image';
 
 interface BookingCardProps {
   booking: Booking;
@@ -43,12 +44,15 @@ export default function BookingCard({ booking, isPast }: BookingCardProps) {
         isPast ? 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100' : ''
       }`}
     >
-      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-surface-dark">
+      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-surface-dark relative">
         {booking.turf?.images?.[0] ? (
-          <img
+          <Image
             src={booking.turf.images[0]}
             alt={booking.turf.name}
-            className="w-full h-full object-cover"
+            fill
+            sizes="80px"
+            className="object-cover"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

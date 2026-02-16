@@ -1,6 +1,7 @@
 import { TurfCardProps } from "@/app/constants/types";
 import Link from "next/link";
 import Button from '@/components/common/Button';
+import Image from 'next/image';
 
 export default function TurfCard({
   sport,
@@ -21,10 +22,14 @@ export default function TurfCard({
           <span className="material-symbols-outlined text-primary text-sm">{sportIcon}</span>
           <span className="text-white text-xs font-bold uppercase tracking-wide">{sport}</span>
         </div>
-        <div 
-          className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" 
-          style={{ backgroundImage: `url('${imageUrl}')` }}
-        ></div>
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="lazy"
+        />
         <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
           <span className="material-symbols-outlined text-yellow-400 text-sm">star</span>
           <span className="text-white text-sm font-bold">{rating}</span>

@@ -98,19 +98,44 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Delete the turf
+    // First, delete related bookings
+    const { error: bookingsError } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('turf_id', id);
+
+    if (bookingsError) {
+      console.error('Error deleting bookings:', bookingsError);
+      // Continue anyway - bookings might not exist
+    }
+
+    // Delete related reviews
+    const { error: reviewsError } = await supabase
+      .from('reviews')
+      .delete()
+      .eq('turf_id', id);
+
+    if (reviewsError) {
+      console.error('Error deleting reviews:', reviewsError);
+      // Continue anyway - reviews might not exist
+    }
+
+    // Finally, delete the turf
     const { error } = await supabase
       .from('turfs')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting turf:', error);
+      throw error;
+    }
 
     return NextResponse.json({ success: true, message: 'Venue deleted successfully' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting venue:', error);
     return NextResponse.json(
-      { error: 'Failed to delete venue' },
+      { error: error.message || 'Failed to delete venue' },
       { status: 500 }
     );
   }

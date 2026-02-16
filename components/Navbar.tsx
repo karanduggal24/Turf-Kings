@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useUserRole } from '@/hooks/useUserRole';
 import DesktopNav from './navbar/DesktopNav';
 import MobileMenu from './navbar/MobileMenu';
@@ -79,8 +80,14 @@ export default function Navbar() {
       <div className="px-4 md:px-10 lg:px-20 flex items-center justify-between max-w-[1440px] mx-auto w-full">
         {/* Logo */}
         <Link href="/" className="flex items-center justify-start cursor-pointer">
-          <div className="w-30 h-16 md:w-48 md:h-20 flex items-center justify-center">
-            <img src="/Dark-Logo.svg" alt="TurfKings Logo" className="w-full h-full object-contain" />
+          <div className="w-30 h-16 md:w-48 md:h-20 flex items-center justify-center relative">
+            <Image 
+              src="/Dark-Logo.svg" 
+              alt="TurfKings Logo" 
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
         </Link>
 

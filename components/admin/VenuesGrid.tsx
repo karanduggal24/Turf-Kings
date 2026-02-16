@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import Button from '@/components/common/Button';
+import Image from 'next/image';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 interface Turf {
   id: string;
@@ -31,6 +33,9 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [venueToDelete, setVenueToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Debounce search query
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -87,6 +92,42 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
     }
   }
 
+  const handleDeleteClick = (turf: Turf) => {
+    setVenueToDelete({ id: turf.id, name: turf.name });
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!venueToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch('/api/admin/venues', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: venueToDelete.id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Remove from local state
+        setTurfs(turfs.filter(turf => turf.id !== venueToDelete.id));
+        setDeleteModalOpen(false);
+        setVenueToDelete(null);
+        // Trigger stats refresh
+        onStatsChange();
+      } else {
+        alert(`Failed to delete venue: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      console.error('Error deleting venue:', error);
+      alert(`Error deleting venue: ${error.message || 'Network error'}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -110,10 +151,13 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
           >
             {/* Image */}
             <div className="relative h-48 overflow-hidden">
-              <img
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              <Image
                 src={turf.images[0] || '/placeholder-turf.jpg'}
                 alt={turf.name}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
               />
               <div className="absolute top-4 left-4 flex items-center gap-2">
                 <span
@@ -136,6 +180,12 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
                 >
                   <span className="material-symbols-outlined text-sm">edit</span>
                 </a>
+                <button
+                  onClick={() => handleDeleteClick(turf)}
+                  className="w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"
+                >
+                  <span className="material-symbols-outlined text-sm">delete</span>
+                </button>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
               <div className="absolute bottom-4 left-4">
@@ -250,6 +300,18 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
           </Button>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setVenueToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        venueName={venueToDelete?.name || ''}
+        isDeleting={isDeleting}
+      />
     </>
   );
 }

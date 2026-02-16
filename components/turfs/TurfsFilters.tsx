@@ -1,7 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { FilterState } from './TurfsPageClient';
 import Button from '@/components/common/Button';
+import Checkbox from '@/components/common/Checkbox';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface TurfsFiltersProps {
   filters: FilterState;
@@ -9,22 +12,44 @@ interface TurfsFiltersProps {
   isMobile: boolean;
 }
 
-export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFiltersProps) {
-  const toggleSport = (sport: string) => {
-    setFilters({
-      ...filters,
-      sports: filters.sports.includes(sport)
-        ? filters.sports.filter(s => s !== sport)
-        : [...filters.sports, sport]
-    });
-  };
+interface SportOption {
+  value: string;
+  label: string;
+  icon: string;
+}
 
-  const toggleAmenity = (amenity: string) => {
+const amenitiesOptions = ['AC Rooms', 'Cafe', 'Parking', 'Showers', 'Equipment'];
+
+export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFiltersProps) {
+  const [sportsOptions, setSportsOptions] = useState<SportOption[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSportsTypes = async () => {
+      try {
+        const response = await fetch('/api/sports-types');
+        const data = await response.json();
+        
+        if (data.sports) {
+          setSportsOptions(data.sports);
+        }
+      } catch (error) {
+        console.error('Error fetching sports types:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSportsTypes();
+  }, []);
+
+  const toggleFilter = (filterType: 'sports' | 'amenities', value: string) => {
+    const currentArray = filters[filterType];
     setFilters({
       ...filters,
-      amenities: filters.amenities.includes(amenity)
-        ? filters.amenities.filter(a => a !== amenity)
-        : [...filters.amenities, amenity]
+      [filterType]: currentArray.includes(value)
+        ? currentArray.filter(item => item !== value)
+        : [...currentArray, value]
     });
   };
 
@@ -52,67 +77,25 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
         {/* Sports Type */}
         <div className="flex flex-col gap-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Sports Type</h3>
-          <div className="space-y-2">
-            <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-              filters.sports.includes('football')
-                ? 'bg-primary/10 border-primary'
-                : 'bg-surface-dark border-surface-highlight hover:border-primary/50'
-            }`}>
-              <input
-                type="checkbox"
-                checked={filters.sports.includes('football')}
-                onChange={() => toggleSport('football')}
-                className="rounded border-surface-highlight bg-transparent text-primary focus:ring-primary"
-              />
-              <span className="material-symbols-outlined text-xl">sports_soccer</span>
-              <span className="text-sm font-medium">Football</span>
-            </label>
-
-            <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-              filters.sports.includes('cricket')
-                ? 'bg-primary/10 border-primary'
-                : 'bg-surface-dark border-surface-highlight hover:border-primary/50'
-            }`}>
-              <input
-                type="checkbox"
-                checked={filters.sports.includes('cricket')}
-                onChange={() => toggleSport('cricket')}
-                className="rounded border-surface-highlight bg-transparent text-primary focus:ring-primary"
-              />
-              <span className="material-symbols-outlined text-xl">sports_cricket</span>
-              <span className="text-sm font-medium">Cricket</span>
-            </label>
-
-            <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-              filters.sports.includes('badminton')
-                ? 'bg-primary/10 border-primary'
-                : 'bg-surface-dark border-surface-highlight hover:border-primary/50'
-            }`}>
-              <input
-                type="checkbox"
-                checked={filters.sports.includes('badminton')}
-                onChange={() => toggleSport('badminton')}
-                className="rounded border-surface-highlight bg-transparent text-primary focus:ring-primary"
-              />
-              <span className="material-symbols-outlined text-xl">sports_tennis</span>
-              <span className="text-sm font-medium">Badminton</span>
-            </label>
-
-            <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-              filters.sports.includes('multi')
-                ? 'bg-primary/10 border-primary'
-                : 'bg-surface-dark border-surface-highlight hover:border-primary/50'
-            }`}>
-              <input
-                type="checkbox"
-                checked={filters.sports.includes('multi')}
-                onChange={() => toggleSport('multi')}
-                className="rounded border-surface-highlight bg-transparent text-primary focus:ring-primary"
-              />
-              <span className="material-symbols-outlined text-xl">sports</span>
-              <span className="text-sm font-medium">Multi-Sport</span>
-            </label>
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : sportsOptions.length > 0 ? (
+            <div className="space-y-2">
+              {sportsOptions.map((sport) => (
+                <Checkbox
+                  key={sport.value}
+                  checked={filters.sports.includes(sport.value)}
+                  onChange={() => toggleFilter('sports', sport.value)}
+                  label={sport.label}
+                  icon={sport.icon}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 text-center py-4">No sports available</p>
+          )}
         </div>
 
         {/* Price Range */}
@@ -168,10 +151,10 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
         <div className="flex flex-col gap-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Amenities</h3>
           <div className="flex flex-wrap gap-2">
-            {['AC Rooms', 'Cafe', 'Parking', 'Showers', 'Equipment'].map((amenity) => (
+            {amenitiesOptions.map((amenity) => (
               <button
                 key={amenity}
-                onClick={() => toggleAmenity(amenity)}
+                onClick={() => toggleFilter('amenities', amenity)}
                 className={`px-3 py-1 rounded-full border text-xs font-medium transition-all ${
                   filters.amenities.includes(amenity)
                     ? 'border-primary bg-primary/10 text-primary'

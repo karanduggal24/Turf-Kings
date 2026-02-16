@@ -3,17 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageUpload from '@/components/venue/ImageUpload';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface VenueFormEditProps {
   turf: any;
 }
 
-const SPORTS = [
-  { id: 'cricket', label: 'Cricket', icon: 'sports_cricket' },
-  { id: 'football', label: 'Football', icon: 'sports_soccer' },
-  { id: 'badminton', label: 'Badminton', icon: 'sports_tennis' },
-  { id: 'multi', label: 'Multi-Sport', icon: 'sports_kabaddi' },
-];
+interface SportOption {
+  value: string;
+  label: string;
+  icon: string;
+}
 
 const AMENITIES = [
   { id: 'washroom', label: 'Washroom', icon: 'wc' },
@@ -27,6 +27,8 @@ export default function VenueFormEdit({ turf }: VenueFormEditProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sports, setSports] = useState<SportOption[]>([]);
+  const [loadingSports, setLoadingSports] = useState(true);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -42,6 +44,26 @@ export default function VenueFormEdit({ turf }: VenueFormEditProps) {
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Fetch sports types
+  useEffect(() => {
+    const fetchSportsTypes = async () => {
+      try {
+        const response = await fetch('/api/sports-types');
+        const data = await response.json();
+        
+        if (data.allSports) {
+          setSports(data.allSports);
+        }
+      } catch (error) {
+        console.error('Error fetching sports types:', error);
+      } finally {
+        setLoadingSports(false);
+      }
+    };
+
+    fetchSportsTypes();
+  }, []);
 
   // Initialize form with turf data
   useEffect(() => {
@@ -269,29 +291,39 @@ export default function VenueFormEdit({ turf }: VenueFormEditProps) {
           <label className="block text-sm font-bold text-gray-200">
             Sport Type <span className="text-primary">*</span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {SPORTS.map((sport) => (
-              <button
-                key={sport.id}
-                type="button"
-                onClick={() => handleSportChange(sport.id)}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
-                  formData.sportType === sport.id
-                    ? 'border-primary bg-primary/10'
-                    : 'border-surface-dark hover:border-primary/50'
-                }`}
-              >
-                <span className={`material-symbols-outlined mb-2 text-2xl ${
-                  formData.sportType === sport.id ? 'text-primary' : 'text-gray-400'
-                }`}>
-                  {sport.icon}
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wide text-white">
-                  {sport.label}
-                </span>
-              </button>
-            ))}
-          </div>
+          {loadingSports ? (
+            <div className="flex items-center justify-center py-12">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : sports.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {sports.map((sport) => (
+                <button
+                  key={sport.value}
+                  type="button"
+                  onClick={() => handleSportChange(sport.value)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                    formData.sportType === sport.value
+                      ? 'border-primary bg-primary/10'
+                      : 'border-surface-dark hover:border-primary/50'
+                  }`}
+                >
+                  <span className={`material-symbols-outlined mb-2 text-2xl ${
+                    formData.sportType === sport.value ? 'text-primary' : 'text-gray-400'
+                  }`}>
+                    {sport.icon}
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-white">
+                    {sport.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              No sports available
+            </div>
+          )}
         </div>
 
         {/* Location Details */}

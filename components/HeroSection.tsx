@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import AnimatedText from './AnimatedText';
 import DateSelector from './DateSelector';
 
@@ -37,12 +38,15 @@ export default function HeroSection() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/10 z-10"></div>
-        <div 
-          className="w-full h-full bg-cover bg-center bg-no-repeat opacity-70" 
-          style={{
-            backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDfTh2XPAhAuHJ6ZnNq9JZGHsjgUmGORyCf_4z5Xb4EGeXSkJx8beMWkK6g6BMomb9M3UyU5W5OJS4QJfCYT2k4UmsgkAnAz4tf8DO1Y_QxMNiPkwucXLYECcmSkiCHtg-BYAfsUsMvVpzujMZgPt8eQwemYeeqFOzZjsjXIuZhSScDmNJ1yT_YZ5nnRR7tA--VxbGQi6O3OvsS2B6N5fk2o0nr7e2UhUb6MjxhrhE945De1TMaqmnrfKGD8cFJ-OTEIoNrfKi-miI')"
-          }}
-        ></div>
+        <Image
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfTh2XPAhAuHJ6ZnNq9JZGHsjgUmGORyCf_4z5Xb4EGeXSkJx8beMWkK6g6BMomb9M3UyU5W5OJS4QJfCYT2k4UmsgkAnAz4tf8DO1Y_QxMNiPkwucXLYECcmSkiCHtg-BYAfsUsMvVpzujMZgPt8eQwemYeeqFOzZjsjXIuZhSScDmNJ1yT_YZ5nnRR7tA--VxbGQi6O3OvsS2B6N5fk2o0nr7e2UhUb6MjxhrhE945De1TMaqmnrfKGD8cFJ-OTEIoNrfKi-miI"
+          alt="Hero background - Sports turf"
+          fill
+          priority
+          quality={75}
+          sizes="100vw"
+          className="object-cover opacity-70"
+        />
       </div>
 
       <div className="relative  flex flex-col items-center max-w-4xl w-full gap-8 text-center">

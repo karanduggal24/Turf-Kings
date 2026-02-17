@@ -1,10 +1,24 @@
+-- ============================================
+-- TURFKINGS DATABASE SCHEMA
+-- Complete schema for venues with multiple turfs
+-- ============================================
+
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Create custom types
+-- ============================================
+-- CUSTOM TYPES
+-- ============================================
+
 CREATE TYPE sport_type AS ENUM ('cricket', 'football', 'badminton', 'multi');
 CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'cancelled', 'completed');
 CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed', 'refunded');
+CREATE TYPE user_role AS ENUM ('user', 'turf_owner', 'admin');
+CREATE TYPE approval_status AS ENUM ('pending', 'approved', 'rejected');
+
+-- ============================================
+-- TABLES
+-- ============================================
 
 -- Users table (extends Supabase auth.users)
 CREATE TABLE users (
@@ -13,35 +27,47 @@ CREATE TABLE users (
   full_name TEXT,
   phone TEXT,
   avatar_url TEXT,
+  role user_role DEFAULT 'user' NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Turfs table
-CREATE TABLE turfs (
+-- Venues table (the location/facility)
+CREATE TABLE venues (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
   location TEXT NOT NULL,
   city TEXT NOT NULL,
   state TEXT NOT NULL,
-  price_per_hour DECIMAL(10,2) NOT NULL,
-  sport_type sport_type NOT NULL,
+  phone TEXT,
   amenities TEXT[] DEFAULT '{}',
   images TEXT[] DEFAULT '{}',
-  rating DECIMAL(3,2) DEFAULT 0,
-  total_reviews INTEGER DEFAULT 0,
   is_active BOOLEAN DEFAULT true,
+  approval_status approval_status DEFAULT 'pending',
   owner_id UUID REFERENCES users(id) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Turfs table (individual playing fields within a venue)
+CREATE TABLE turfs_new (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  venue_id UUID REFERENCES venues(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  sport_type sport_type NOT NULL,
+  price_per_hour DECIMAL(10,2) NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Bookings table
-CREATE TABLE bookings (
+CREATE TABLE bookings_new (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) NOT NULL,
-  turf_id UUID REFERENCES turfs(id) NOT NULL,
+  turf_id UUID REFERENCES turfs_new(id) ON DELETE CASCADE NOT NULL,
+  venue_id UUID REFERENCES venues(id) ON DELETE CASCADE NOT NULL,
   booking_date DATE NOT NULL,
   start_time TIME NOT NULL,
   end_time TIME NOT NULL,
@@ -54,38 +80,62 @@ CREATE TABLE bookings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   
   -- Ensure no overlapping bookings for same turf
-  CONSTRAINT no_overlapping_bookings UNIQUE (turf_id, booking_date, start_time, end_time)
+  CONSTRAINT no_overlapping_bookings_new UNIQUE (turf_id, booking_date, start_time, end_time)
 );
 
--- Reviews table
-CREATE TABLE reviews (
+-- Reviews table (at venue level)
+CREATE TABLE reviews_new (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) NOT NULL,
-  turf_id UUID REFERENCES turfs(id) NOT NULL,
-  booking_id UUID REFERENCES bookings(id) NOT NULL,
+  venue_id UUID REFERENCES venues(id) ON DELETE CASCADE NOT NULL,
+  booking_id UUID REFERENCES bookings_new(id) ON DELETE CASCADE NOT NULL,
   rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
   comment TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   
   -- One review per booking
-  CONSTRAINT one_review_per_booking UNIQUE (booking_id)
+  CONSTRAINT one_review_per_booking_new UNIQUE (booking_id)
 );
 
--- Indexes for better performance
-CREATE INDEX idx_turfs_city ON turfs(city);
-CREATE INDEX idx_turfs_sport_type ON turfs(sport_type);
-CREATE INDEX idx_turfs_is_active ON turfs(is_active);
-CREATE INDEX idx_bookings_user_id ON bookings(user_id);
-CREATE INDEX idx_bookings_turf_id ON bookings(turf_id);
-CREATE INDEX idx_bookings_date ON bookings(booking_date);
-CREATE INDEX idx_reviews_turf_id ON reviews(turf_id);
+-- ============================================
+-- INDEXES
+-- ============================================
 
--- Row Level Security (RLS) policies
+-- Users indexes
+CREATE INDEX idx_users_role ON users(role);
+
+-- Venues indexes
+CREATE INDEX idx_venues_city ON venues(city);
+CREATE INDEX idx_venues_owner_id ON venues(owner_id);
+CREATE INDEX idx_venues_is_active ON venues(is_active);
+CREATE INDEX idx_venues_approval_status ON venues(approval_status);
+
+-- Turfs indexes
+CREATE INDEX idx_turfs_new_venue_id ON turfs_new(venue_id);
+CREATE INDEX idx_turfs_new_sport_type ON turfs_new(sport_type);
+CREATE INDEX idx_turfs_new_is_active ON turfs_new(is_active);
+
+-- Bookings indexes
+CREATE INDEX idx_bookings_new_user_id ON bookings_new(user_id);
+CREATE INDEX idx_bookings_new_turf_id ON bookings_new(turf_id);
+CREATE INDEX idx_bookings_new_venue_id ON bookings_new(venue_id);
+CREATE INDEX idx_bookings_new_date ON bookings_new(booking_date);
+CREATE INDEX idx_bookings_new_status ON bookings_new(status);
+
+-- Reviews indexes
+CREATE INDEX idx_reviews_new_venue_id ON reviews_new(venue_id);
+CREATE INDEX idx_reviews_new_user_id ON reviews_new(user_id);
+
+-- ============================================
+-- ROW LEVEL SECURITY (RLS)
+-- ============================================
+
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE turfs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE venues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE turfs_new ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings_new ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reviews_new ENABLE ROW LEVEL SECURITY;
 
 -- Users policies
 CREATE POLICY "Users can view their own profile" ON users
@@ -94,41 +144,74 @@ CREATE POLICY "Users can view their own profile" ON users
 CREATE POLICY "Users can update their own profile" ON users
   FOR UPDATE USING (auth.uid() = id);
 
--- Turfs policies
-CREATE POLICY "Anyone can view active turfs" ON turfs
-  FOR SELECT USING (is_active = true);
+-- Venues policies
+CREATE POLICY "Anyone can view active approved venues" ON venues
+  FOR SELECT USING (is_active = true AND approval_status = 'approved');
 
-CREATE POLICY "Owners can manage their turfs" ON turfs
-  FOR ALL USING (auth.uid() = owner_id);
+CREATE POLICY "Owners can view their own venues" ON venues
+  FOR SELECT USING (auth.uid() = owner_id);
+
+CREATE POLICY "Owners can create venues" ON venues
+  FOR INSERT WITH CHECK (auth.uid() = owner_id);
+
+CREATE POLICY "Owners can update their venues" ON venues
+  FOR UPDATE USING (auth.uid() = owner_id);
+
+CREATE POLICY "Owners can delete their venues" ON venues
+  FOR DELETE USING (auth.uid() = owner_id);
+
+-- Turfs policies
+CREATE POLICY "Anyone can view active turfs of approved venues" ON turfs_new
+  FOR SELECT USING (
+    is_active = true AND 
+    EXISTS (
+      SELECT 1 FROM venues 
+      WHERE venues.id = turfs_new.venue_id 
+      AND venues.is_active = true 
+      AND venues.approval_status = 'approved'
+    )
+  );
+
+CREATE POLICY "Venue owners can manage their turfs" ON turfs_new
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM venues 
+      WHERE venues.id = turfs_new.venue_id 
+      AND venues.owner_id = auth.uid()
+    )
+  );
 
 -- Bookings policies
-CREATE POLICY "Users can view their own bookings" ON bookings
+CREATE POLICY "Users can view their own bookings" ON bookings_new
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can create bookings" ON bookings
+CREATE POLICY "Users can create bookings" ON bookings_new
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own bookings" ON bookings
+CREATE POLICY "Users can update their own bookings" ON bookings_new
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- Reviews policies
-CREATE POLICY "Anyone can view reviews" ON reviews
+CREATE POLICY "Anyone can view reviews" ON reviews_new
   FOR SELECT TO authenticated;
 
-CREATE POLICY "Users can create reviews for their bookings" ON reviews
+CREATE POLICY "Users can create reviews for their bookings" ON reviews_new
   FOR INSERT WITH CHECK (
     auth.uid() = user_id AND 
     EXISTS (
-      SELECT 1 FROM bookings 
+      SELECT 1 FROM bookings_new 
       WHERE id = booking_id AND user_id = auth.uid()
     )
   );
 
--- Function to automatically create user profile after email verification
+-- ============================================
+-- FUNCTIONS
+-- ============================================
+
+-- Function to automatically create user profile after signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Only create profile if email is confirmed
   IF NEW.email_confirmed_at IS NOT NULL THEN
     INSERT INTO public.users (id, email, full_name)
     VALUES (
@@ -136,13 +219,51 @@ BEGIN
       NEW.email,
       NEW.raw_user_meta_data->>'full_name'
     )
-    ON CONFLICT (id) DO NOTHING; -- Prevent duplicates
+    ON CONFLICT (id) DO NOTHING;
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger to create user profile on signup (if email already confirmed)
+-- Function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to automatically upgrade user to turf_owner when they create a venue
+CREATE OR REPLACE FUNCTION upgrade_to_turf_owner()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE users 
+  SET role = 'turf_owner' 
+  WHERE id = NEW.owner_id 
+  AND role = 'user';
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to update venue rating when review is added
+CREATE OR REPLACE FUNCTION update_venue_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE venues 
+  SET updated_at = NOW()
+  WHERE id = NEW.venue_id;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================
+-- TRIGGERS
+-- ============================================
+
+-- Trigger to create user profile on signup
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
@@ -156,53 +277,73 @@ CREATE TRIGGER on_auth_user_verified
   WHEN (OLD.email_confirmed_at IS NULL AND NEW.email_confirmed_at IS NOT NULL)
   EXECUTE FUNCTION public.handle_new_user();
 
--- Function to update turf ratings
-CREATE OR REPLACE FUNCTION update_turf_rating()
-RETURNS TRIGGER AS $$
-BEGIN
-  UPDATE turfs 
-  SET 
-    rating = (
-      SELECT COALESCE(AVG(rating), 0) 
-      FROM reviews 
-      WHERE turf_id = NEW.turf_id
-    ),
-    total_reviews = (
-      SELECT COUNT(*) 
-      FROM reviews 
-      WHERE turf_id = NEW.turf_id
-    ),
-    updated_at = NOW()
-  WHERE id = NEW.turf_id;
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to update turf rating when review is added
-CREATE TRIGGER update_turf_rating_trigger
-  AFTER INSERT ON reviews
+-- Trigger to automatically upgrade user role when they create a venue
+DROP TRIGGER IF EXISTS on_venue_created ON venues;
+CREATE TRIGGER on_venue_created
+  AFTER INSERT ON venues
   FOR EACH ROW
-  EXECUTE FUNCTION update_turf_rating();
+  EXECUTE FUNCTION upgrade_to_turf_owner();
 
--- Function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Trigger to update venue when review is added
+DROP TRIGGER IF EXISTS update_venue_rating_trigger ON reviews_new;
+CREATE TRIGGER update_venue_rating_trigger
+  AFTER INSERT ON reviews_new
+  FOR EACH ROW
+  EXECUTE FUNCTION update_venue_rating();
 
--- Triggers for updated_at
+-- Triggers for updated_at columns
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_turfs_updated_at BEFORE UPDATE ON turfs
+CREATE TRIGGER update_venues_updated_at BEFORE UPDATE ON venues
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings
+CREATE TRIGGER update_turfs_new_updated_at BEFORE UPDATE ON turfs_new
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
+CREATE TRIGGER update_bookings_new_updated_at BEFORE UPDATE ON bookings_new
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_reviews_new_updated_at BEFORE UPDATE ON reviews_new
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- COMMENTS
+-- ============================================
+
+COMMENT ON TABLE users IS 'User profiles extending Supabase auth.users';
+COMMENT ON TABLE venues IS 'Venue locations owned by users';
+COMMENT ON TABLE turfs_new IS 'Individual playing fields within venues';
+COMMENT ON TABLE bookings_new IS 'Booking records for turfs';
+COMMENT ON TABLE reviews_new IS 'User reviews for venues';
+
+COMMENT ON COLUMN users.role IS 'User role: user (default), turf_owner (venue owner), admin (platform admin)';
+COMMENT ON COLUMN venues.approval_status IS 'Admin approval status: pending, approved, rejected';
+COMMENT ON COLUMN bookings_new.status IS 'Booking status: pending, confirmed, cancelled, completed';
+COMMENT ON COLUMN bookings_new.payment_status IS 'Payment status: pending, paid, failed, refunded';
+
+-- ============================================
+-- NOTES
+-- ============================================
+
+/*
+Database Structure:
+- Users can have roles: user, turf_owner, admin
+- Venues are locations owned by users
+- Each venue can have multiple turfs (playing fields)
+- Each turf has its own sport type and pricing
+- Bookings are made for specific turfs
+- Reviews are at the venue level
+
+Example:
+Venue: "Champions Sports Complex"
+  ├── Turf 1: Football, ₹1500/hr
+  ├── Turf 2: Cricket, ₹2000/hr
+  └── Turf 3: Badminton, ₹800/hr
+
+Security:
+- Row Level Security (RLS) enabled on all tables
+- Users can only access their own data
+- Venue owners can manage their venues and turfs
+- Public can view approved, active venues
+*/

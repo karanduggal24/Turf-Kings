@@ -18,11 +18,17 @@ interface SportOption {
   icon: string;
 }
 
-const amenitiesOptions = ['AC Rooms', 'Cafe', 'Parking', 'Showers', 'Equipment'];
+interface AmenityOption {
+  value: string;
+  label: string;
+  icon: string;
+}
 
 export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFiltersProps) {
   const [sportsOptions, setSportsOptions] = useState<SportOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [amenitiesOptions, setAmenitiesOptions] = useState<AmenityOption[]>([]);
+  const [loadingSports, setLoadingSports] = useState(true);
+  const [loadingAmenities, setLoadingAmenities] = useState(true);
 
   useEffect(() => {
     const fetchSportsTypes = async () => {
@@ -36,11 +42,27 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
       } catch (error) {
         // Error fetching sports types
       } finally {
-        setLoading(false);
+        setLoadingSports(false);
+      }
+    };
+
+    const fetchAmenities = async () => {
+      try {
+        const response = await fetch('/api/amenities');
+        const data = await response.json();
+        
+        if (data.amenities) {
+          setAmenitiesOptions(data.amenities);
+        }
+      } catch (error) {
+        // Error fetching amenities
+      } finally {
+        setLoadingAmenities(false);
       }
     };
 
     fetchSportsTypes();
+    fetchAmenities();
   }, []);
 
   const toggleFilter = (filterType: 'sports' | 'amenities', value: string) => {
@@ -77,7 +99,7 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
         {/* Sports Type */}
         <div className="flex flex-col gap-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Sports Type</h3>
-          {loading ? (
+          {loadingSports ? (
             <div className="flex items-center justify-center py-8">
               <LoadingSpinner size="sm" />
             </div>
@@ -152,21 +174,30 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
         {/* Amenities */}
         <div className="flex flex-col gap-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Amenities</h3>
-          <div className="flex flex-wrap gap-2">
-            {amenitiesOptions.map((amenity) => (
-              <button
-                key={amenity}
-                onClick={() => toggleFilter('amenities', amenity)}
-                className={`px-3 py-1 rounded-full border text-xs font-medium transition-all ${
-                  filters.amenities.includes(amenity)
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-surface-highlight bg-surface-dark hover:border-primary/50'
-                }`}
-              >
-                {amenity}
-              </button>
-            ))}
-          </div>
+          {loadingAmenities ? (
+            <div className="flex items-center justify-center py-8">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : amenitiesOptions.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {amenitiesOptions.map((amenity) => (
+                <button
+                  key={amenity.value}
+                  onClick={() => toggleFilter('amenities', amenity.value)}
+                  className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all flex items-center gap-1.5 ${
+                    filters.amenities.includes(amenity.value)
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-surface-highlight bg-surface-dark hover:border-primary/50'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">{amenity.icon}</span>
+                  {amenity.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 text-center py-4">No amenities available</p>
+          )}
         </div>
 
         <Button

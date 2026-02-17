@@ -36,10 +36,10 @@ export default function TurfCardHeader({ turf, isExpanded, onToggle }: TurfCardH
                 <span className="material-symbols-outlined text-xs">straighten</span>
                 Size: 40m x 20m
               </span>
-              <span className="flex items-center gap-1">
+              {/* <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-xs">grass</span>
                 Surface: 3G Rubber Infill
-              </span>
+              </span> */}
             </div>
           </div>
         </div>

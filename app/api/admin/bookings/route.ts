@@ -19,11 +19,12 @@ export async function GET(request: Request) {
 
     // Build query
     let query = supabase
-      .from('bookings')
+      .from('bookings_new')
       .select(`
         *,
-        user:users!bookings_user_id_fkey(full_name, email, phone),
-        turf:turfs!bookings_turf_id_fkey(name, location, sport_type)
+        user:users(full_name, email, phone),
+        turf:turfs_new(name, sport_type),
+        venue:venues(name, location, city)
       `, { count: 'exact' })
       .order('created_at', { ascending: false });
 

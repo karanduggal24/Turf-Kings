@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import VenueFormEdit from '@/components/venue/VenueFormEdit';
+import VenueFormEditNew from '@/components/venue/VenueFormEditNew';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import Button from '@/components/common/Button';
 
@@ -12,32 +12,29 @@ interface EditVenueClientProps {
 
 export default function EditVenueClient({ turfId }: EditVenueClientProps) {
   const router = useRouter();
-  const [turf, setTurf] = useState<any>(null);
+  const [venue, setVenue] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchTurf();
+    fetchVenue();
   }, [turfId]);
 
-  async function fetchTurf() {
+  async function fetchVenue() {
     try {
       setLoading(true);
-      console.log('Fetching turf with ID:', turfId);
       const response = await fetch(`/api/admin/turfs/${turfId}`);
-      console.log('Response status:', response.status);
       
       const data = await response.json();
-      console.log('Response data:', data);
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch turf details');
+        throw new Error(data.error || 'Failed to fetch venue details');
       }
 
-      setTurf(data.turf);
+      setVenue(data.venue || data.turf);
     } catch (err: any) {
-      console.error('Error fetching turf:', err);
-      setError(err.message || 'Failed to load turf');
+      console.error('Error fetching venue:', err);
+      setError(err.message || 'Failed to load venue');
     } finally {
       setLoading(false);
     }
@@ -68,7 +65,7 @@ export default function EditVenueClient({ turfId }: EditVenueClientProps) {
     );
   }
 
-  if (error || !turf) {
+  if (error || !venue) {
     return (
       <>
         <header className="p-6 lg:p-10 pb-0">
@@ -87,7 +84,7 @@ export default function EditVenueClient({ turfId }: EditVenueClientProps) {
         <div className="p-6 lg:p-10 pt-6">
           <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-8 text-center">
             <span className="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
-            <p className="text-red-500 text-lg font-bold">{error || 'Turf not found'}</p>
+            <p className="text-red-500 text-lg font-bold">{error || 'Venue not found'}</p>
             <Button
               onClick={() => router.push('/admin/venues')}
               className="mt-4"
@@ -112,12 +109,12 @@ export default function EditVenueClient({ turfId }: EditVenueClientProps) {
             <span className="text-primary/80">Edit Venue</span>
           </nav>
           <h1 className="text-3xl font-bold text-white">Edit Venue</h1>
-          <p className="text-gray-400 mt-1">Update venue information and settings</p>
+          <p className="text-gray-400 mt-1">Update venue information and turfs</p>
         </div>
       </header>
 
       <div className="p-6 lg:p-10 pt-6">
-        <VenueFormEdit turf={turf} />
+        <VenueFormEditNew venue={venue} />
       </div>
     </>
   );

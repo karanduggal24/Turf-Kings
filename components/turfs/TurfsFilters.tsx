@@ -34,7 +34,7 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
           setSportsOptions(data.sports);
         }
       } catch (error) {
-        console.error('Error fetching sports types:', error);
+        // Error fetching sports types
       } finally {
         setLoading(false);
       }
@@ -127,6 +127,7 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
                   ...filters,
                   priceRange: [parseInt(e.target.value) || 0, filters.priceRange[1]]
                 })}
+                onWheel={(e) => e.currentTarget.blur()}
                 className="w-20 px-2 py-1 bg-surface-dark border border-surface-highlight rounded text-center"
                 placeholder="Min"
               />
@@ -140,6 +141,7 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
                   ...filters,
                   priceRange: [filters.priceRange[0], parseInt(e.target.value) || 5000]
                 })}
+                onWheel={(e) => e.currentTarget.blur()}
                 className="w-20 px-2 py-1 bg-surface-dark border border-surface-highlight rounded text-center"
                 placeholder="Max"
               />

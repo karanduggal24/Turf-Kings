@@ -15,27 +15,47 @@ export async function GET(request: Request) {
     
     const offset = (page - 1) * limit;
 
-    // Build query - show approved turfs
+    // Build query - show approved venues
     let query = supabase
-      .from('turfs')
+      .from('venues')
       .select(`
         *,
-        owner:users!turfs_owner_id_fkey(full_name, email)
+        owner:users!venues_owner_id_fkey(full_name, email)
       `, { count: 'exact' })
-      .eq('approval_status', 'approved')  // Only show approved turfs
+      .eq('approval_status', 'approved')
       .order('created_at', { ascending: false });
 
     // Search filter
     if (search) {
-      query = query.or(`name.ilike.%${search}%,location.ilike.%${search}%`);
+      query = query.or(`name.ilike.%${search}%,location.ilike.%${search}%,city.ilike.%${search}%`);
     }
 
-    const { data: turfs, error, count } = await query.range(offset, offset + limit - 1);
+    const { data: venues, error, count } = await query.range(offset, offset + limit - 1);
 
     if (error) throw error;
 
+    // Fetch turfs for each venue
+    const venuesWithTurfs = await Promise.all(
+      (venues || []).map(async (venue) => {
+        const { data: turfs } = await supabase
+          .from('turfs_new')
+          .select('*')
+          .eq('venue_id', venue.id);
+
+        return {
+          ...venue,
+          turfs: turfs || [],
+          total_turfs: turfs?.length || 0,
+          available_sports: [...new Set(turfs?.map(t => t.sport_type) || [])],
+          min_price: turfs && turfs.length > 0 ? Math.min(...turfs.map(t => t.price_per_hour)) : 0,
+          max_price: turfs && turfs.length > 0 ? Math.max(...turfs.map(t => t.price_per_hour)) : 0,
+        };
+      })
+    );
+
     return NextResponse.json({
-      turfs: turfs || [],
+      turfs: venuesWithTurfs, // Keep as 'turfs' for backward compatibility
+      venues: venuesWithTurfs,
       pagination: {
         page,
         limit,
@@ -58,6 +78,13 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { id, is_active, approval_status } = body;
 
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Venue ID is required' },
+        { status: 400 }
+      );
+    }
+
     const updateData: any = {};
     if (typeof is_active !== 'undefined') {
       updateData.is_active = is_active;
@@ -66,16 +93,20 @@ export async function PATCH(request: Request) {
       updateData.approval_status = approval_status;
     }
 
+    // Update the venue in the venues table
     const { data, error } = await supabase
-      .from('turfs')
+      .from('venues')
       .update(updateData)
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating venue:', error);
+      throw error;
+    }
 
-    return NextResponse.json({ turf: data });
+    return NextResponse.json({ venue: data });
   } catch (error) {
     console.error('Error updating venue:', error);
     return NextResponse.json(
@@ -98,36 +129,59 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // First, delete related bookings
-    const { error: bookingsError } = await supabase
-      .from('bookings')
-      .delete()
-      .eq('turf_id', id);
+    // First, get all turfs for this venue
+    const { data: turfs, error: turfsError } = await supabase
+      .from('turfs_new')
+      .select('id')
+      .eq('venue_id', id);
 
-    if (bookingsError) {
-      console.error('Error deleting bookings:', bookingsError);
-      // Continue anyway - bookings might not exist
+    if (turfsError) {
+      console.error('Error fetching turfs:', turfsError);
     }
 
-    // Delete related reviews
+    const turfIds = turfs?.map(t => t.id) || [];
+
+    // Delete related bookings for all turfs in this venue
+    if (turfIds.length > 0) {
+      const { error: bookingsError } = await supabase
+        .from('bookings_new')
+        .delete()
+        .in('turf_id', turfIds);
+
+      if (bookingsError) {
+        console.error('Error deleting bookings:', bookingsError);
+      }
+    }
+
+    // Delete related reviews for this venue
     const { error: reviewsError } = await supabase
       .from('reviews')
       .delete()
-      .eq('turf_id', id);
+      .eq('venue_id', id);
 
     if (reviewsError) {
       console.error('Error deleting reviews:', reviewsError);
-      // Continue anyway - reviews might not exist
     }
 
-    // Finally, delete the turf
+    // Delete all turfs for this venue
+    const { error: deleteTurfsError } = await supabase
+      .from('turfs_new')
+      .delete()
+      .eq('venue_id', id);
+
+    if (deleteTurfsError) {
+      console.error('Error deleting turfs:', deleteTurfsError);
+      throw deleteTurfsError;
+    }
+
+    // Finally, delete the venue
     const { error } = await supabase
-      .from('turfs')
+      .from('venues')
       .delete()
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting turf:', error);
+      console.error('Error deleting venue:', error);
       throw error;
     }
 

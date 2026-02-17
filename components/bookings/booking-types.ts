@@ -10,10 +10,14 @@ export interface BookingDetails {
   created_at: string;
   turf: {
     name: string;
+  };
+  venue: {
+    name: string;
     location: string;
     city: string;
     state: string;
     phone: string;
+    images?: string[];
   };
   user: {
     full_name: string;

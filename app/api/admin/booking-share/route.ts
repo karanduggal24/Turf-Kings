@@ -10,11 +10,11 @@ export async function GET() {
 
     // Get booking counts by sport type
     const { data: bookingData, error } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select(`
         id,
         turf_id,
-        turfs!inner(sport_type)
+        turf:turfs_new!inner(sport_type)
       `);
 
     if (error) throw error;
@@ -28,7 +28,7 @@ export async function GET() {
     };
 
     bookingData?.forEach((booking: any) => {
-      const sportType = booking.turfs?.sport_type;
+      const sportType = booking.turf?.sport_type;
       if (sportType && sportType in sportCounts) {
         sportCounts[sportType]++;
       }

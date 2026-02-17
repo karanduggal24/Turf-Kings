@@ -5,13 +5,19 @@ import type { FilterState } from '../TurfsPageClient';
 export function useTurfFilters(turfs: Turf[], filters: FilterState) {
   return useMemo(() => {
     return turfs.filter(turf => {
-      // Sport filter
-      if (filters.sports.length > 0 && !filters.sports.includes(turf.sport_type)) {
-        return false;
+      // Sport filter - check if sport exists in available_sports array
+      if (filters.sports.length > 0) {
+        const venueAvailableSports = (turf as any).available_sports || [turf.sport_type];
+        const hasSport = filters.sports.some(sport => venueAvailableSports.includes(sport));
+        if (!hasSport) return false;
       }
 
-      // Price filter
-      if (turf.price_per_hour < filters.priceRange[0] || turf.price_per_hour > filters.priceRange[1]) {
+      // Price filter - check if any turf price falls within range
+      const minPrice = (turf as any).min_price || turf.price_per_hour;
+      const maxPrice = (turf as any).max_price || turf.price_per_hour;
+      
+      // Venue matches if any of its turfs fall within the price range
+      if (maxPrice < filters.priceRange[0] || minPrice > filters.priceRange[1]) {
         return false;
       }
 

@@ -13,24 +13,23 @@ export async function GET(
     const params = await context.params;
     const id = params.id;
 
-    console.log('Fetching turf with ID:', id);
-
-    const { data: turf, error } = await supabase
-      .from('turfs')
+    // Fetch venue with all turfs
+    const { data: venue, error } = await supabase
+      .from('venues')
       .select(`
         *,
-        owner:users(full_name, email, phone)
+        owner:users!venues_owner_id_fkey(full_name, email, phone),
+        turfs:turfs_new(id, name, sport_type, price_per_hour, is_active)
       `)
       .eq('id', id)
       .single();
 
     if (error) {
-      console.error('Error fetching turf:', error);
+      console.error('Error fetching venue:', error);
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
 
-    console.log('Turf fetched successfully:', turf?.name);
-    return NextResponse.json({ success: true, turf });
+    return NextResponse.json({ success: true, venue, turf: venue });
   } catch (error) {
     console.error('Error in GET /api/admin/turfs/[id]:', error);
     return NextResponse.json(
@@ -53,7 +52,7 @@ export async function PATCH(
     console.log('Updating turf with ID:', id);
 
     const { data: turf, error } = await supabase
-      .from('turfs')
+      .from('turfs_new')
       .update(body)
       .eq('id', id)
       .select()

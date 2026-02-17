@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { Booking } from '@/app/constants/booking-types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import Badge from '@/components/common/Badge';
+import ConfirmModal from '@/components/common/ConfirmModal';
+import AlertModal from '@/components/common/AlertModal';
+import BookingTableRow from './bookings/BookingTableRow';
+import BookingsPagination from './bookings/BookingsPagination';
 
 interface BookingWithRelations extends Omit<Booking, 'turf'> {
   user?: {
@@ -18,33 +21,19 @@ interface BookingWithRelations extends Omit<Booking, 'turf'> {
   };
 }
 
-const SPORT_COLORS: Record<string, string> = {
-  cricket: 'bg-primary',
-  football: 'bg-blue-500',
-  badminton: 'bg-purple-500',
-  multi: 'bg-orange-500',
-};
-
-const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  pending: { bg: 'bg-amber-500/20', text: 'text-amber-500', border: 'border-amber-500/30' },
-  confirmed: { bg: 'bg-primary/20', text: 'text-primary', border: 'border-primary/30' },
-  completed: { bg: 'bg-green-500/20', text: 'text-green-500', border: 'border-green-500/30' },
-  cancelled: { bg: 'bg-gray-500/20', text: 'text-gray-500', border: 'border-gray-500/30' },
-};
-
-const PAYMENT_STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  pending: { bg: 'bg-amber-500/20', text: 'text-amber-500', border: 'border-amber-500/30' },
-  paid: { bg: 'bg-primary/20', text: 'text-primary', border: 'border-primary/30' },
-  failed: { bg: 'bg-red-500/20', text: 'text-red-500', border: 'border-red-500/30' },
-  refunded: { bg: 'bg-red-500/20', text: 'text-red-500', border: 'border-red-500/30' },
-};
-
 export default function BookingsTable() {
   const [bookings, setBookings] = useState<BookingWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertTitle, setAlertTitle] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState<{ id: string; status?: string } | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -67,22 +56,80 @@ export default function BookingsTable() {
     }
   }
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const handleViewBooking = (bookingId: string) => {
+    window.open(`/bookings/${bookingId}`, '_blank');
   };
 
-  const formatTime = (timeStr: string) => {
-    return timeStr.substring(0, 5);
+  const handleCancelBookingClick = (bookingId: string) => {
+    setSelectedBooking({ id: bookingId });
+    setShowCancelModal(true);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const handleCancelBookingConfirm = async () => {
+    if (!selectedBooking) return;
+
+    try {
+      const response = await fetch(`/api/admin/bookings/${selectedBooking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+
+      if (response.ok) {
+        setAlertTitle('Success');
+        setAlertMessage('Booking cancelled successfully');
+        setShowAlertModal(true);
+        fetchBookings();
+      } else {
+        setAlertTitle('Error');
+        setAlertMessage('Failed to cancel booking');
+        setShowAlertModal(true);
+      }
+    } catch (error) {
+      setAlertTitle('Error');
+      setAlertMessage('Failed to cancel booking');
+      setShowAlertModal(true);
+    } finally {
+      setShowCancelModal(false);
+      setSelectedBooking(null);
+    }
+  };
+
+  const handleUpdatePaymentClick = (bookingId: string, currentStatus: string) => {
+    setSelectedBooking({ id: bookingId, status: currentStatus });
+    setShowPaymentModal(true);
+  };
+
+  const handleUpdatePaymentConfirm = async () => {
+    if (!selectedBooking) return;
+
+    const newStatus = selectedBooking.status === 'paid' ? 'pending' : 'paid';
+
+    try {
+      const response = await fetch(`/api/admin/bookings/${selectedBooking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment_status: newStatus }),
+      });
+
+      if (response.ok) {
+        setAlertTitle('Success');
+        setAlertMessage('Payment status updated successfully');
+        setShowAlertModal(true);
+        fetchBookings();
+      } else {
+        setAlertTitle('Error');
+        setAlertMessage('Failed to update payment status');
+        setShowAlertModal(true);
+      }
+    } catch (error) {
+      setAlertTitle('Error');
+      setAlertMessage('Failed to update payment status');
+      setShowAlertModal(true);
+    } finally {
+      setShowPaymentModal(false);
+      setSelectedBooking(null);
+    }
   };
 
   if (loading) {
@@ -127,118 +174,54 @@ export default function BookingsTable() {
                 </td>
               </tr>
             ) : (
-              bookings.map((booking) => {
-                const statusStyle = PAYMENT_STATUS_STYLES[booking.payment_status] || PAYMENT_STATUS_STYLES.pending;
-                const sportColor = SPORT_COLORS[booking.turf?.sport_type || ''] || 'bg-gray-500';
-
-                return (
-                  <tr key={booking.id} className="hover:bg-primary/5 transition-colors group">
-                    <td className="px-6 py-4">
-                      <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-1 rounded">
-                        #{booking.id.substring(0, 8).toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold border border-primary/30">
-                          {getInitials(booking.user?.full_name || 'U')}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {booking.user?.full_name || 'Unknown'}
-                          </p>
-                          <p className="text-xs text-gray-500">{booking.user?.phone || 'N/A'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${sportColor}`}></span>
-                        <span className="text-sm text-white">{booking.turf?.name || 'Unknown'}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <p className="font-medium text-gray-200">{formatDate(booking.booking_date)}</p>
-                      <p className="text-xs text-gray-500">
-                        {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} border ${statusStyle.border}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.text.replace('text-', 'bg-')} mr-1.5 ${booking.payment_status === 'paid' ? 'animate-pulse' : ''}`}></span>
-                        {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded transition-all">
-                          <span className="material-symbols-outlined text-lg">edit</span>
-                        </button>
-                        <button className="p-1.5 text-gray-400 hover:text-amber-500 hover:bg-amber-500/10 rounded transition-all">
-                          <span className="material-symbols-outlined text-lg">cancel</span>
-                        </button>
-                        <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all">
-                          <span className="material-symbols-outlined text-lg">payments</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+              bookings.map((booking) => (
+                <BookingTableRow
+                  key={booking.id}
+                  booking={booking}
+                  onViewBooking={handleViewBooking}
+                  onCancelBooking={handleCancelBookingClick}
+                  onUpdatePayment={handleUpdatePaymentClick}
+                />
+              ))
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="px-6 py-4 bg-primary/5 border-t border-primary/10 flex items-center justify-between">
-        <p className="text-xs text-gray-500">
-          Showing <span className="font-medium text-gray-300">{(page - 1) * 10 + 1}-{Math.min(page * 10, total)}</span> of{' '}
-          <span className="font-medium text-gray-300">{total}</span> bookings
-        </p>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
-            className="p-1 text-gray-500 hover:text-primary transition-all disabled:opacity-30"
-          >
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((pageNum) => (
-            <button
-              key={pageNum}
-              onClick={() => setPage(pageNum)}
-              className={`w-8 h-8 rounded text-xs flex items-center justify-center transition-all ${
-                page === pageNum
-                  ? 'bg-primary text-black font-bold'
-                  : 'hover:bg-primary/10 text-gray-400 hover:text-primary'
-              }`}
-            >
-              {pageNum}
-            </button>
-          ))}
-          {totalPages > 5 && (
-            <>
-              <span className="text-gray-600 text-xs px-1">...</span>
-              <button
-                onClick={() => setPage(totalPages)}
-                className="w-8 h-8 rounded hover:bg-primary/10 text-gray-400 hover:text-primary text-xs flex items-center justify-center transition-all"
-              >
-                {totalPages}
-              </button>
-            </>
-          )}
-          <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages}
-            className="p-1 text-gray-500 hover:text-primary transition-all disabled:opacity-30"
-          >
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
+      <BookingsPagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        itemsPerPage={10}
+        onPageChange={setPage}
+      />
+
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelBookingConfirm}
+        title="Cancel Booking"
+        message="Are you sure you want to cancel this booking? This action cannot be undone."
+        confirmText="Cancel Booking"
+        cancelText="Keep Booking"
+      />
+
+      <ConfirmModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={handleUpdatePaymentConfirm}
+        title="Update Payment Status"
+        message={`Mark payment as ${selectedBooking?.status === 'paid' ? 'pending' : 'paid'}?`}
+        confirmText="Update Status"
+        cancelText="Cancel"
+      />
+
+      <AlertModal
+        isOpen={showAlertModal}
+        onClose={() => setShowAlertModal(false)}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </div>
   );
 }

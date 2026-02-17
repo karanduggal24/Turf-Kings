@@ -19,10 +19,11 @@ export async function GET(
     console.log('Fetching booking with ID:', id);
     
     const { data: booking, error } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select(`
         *,
-        turf:turfs(name, location, city, state, phone, images, price_per_hour),
+        turf:turfs_new(id, name, sport_type, price_per_hour),
+        venue:venues(name, location, city, state, phone, images),
         user:users(full_name, email, phone)
       `)
       .eq('id', id)
@@ -55,12 +56,13 @@ export async function PUT(
   try {
     const body = await request.json()
     const { data: booking, error } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .update(body)
       .eq('id', id)
       .select(`
         *,
-        turf:turfs(name, location, city),
+        turf:turfs_new(id, name, sport_type),
+        venue:venues(name, location, city),
         user:users(full_name, email)
       `)
       .single()
@@ -88,7 +90,7 @@ export async function DELETE(
   
   try {
     const { data: booking, error } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .update({ status: 'cancelled' })
       .eq('id', id)
       .select()

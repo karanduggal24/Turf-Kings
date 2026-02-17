@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     startDate.setDate(startDate.getDate() - parseInt(period));
 
     const { data, error } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('booking_date, total_amount')
       .gte('booking_date', startDate.toISOString().split('T')[0])
       .lte('booking_date', now.toISOString().split('T')[0])

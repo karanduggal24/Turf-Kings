@@ -13,7 +13,6 @@ interface Stats {
   totalRevenue: string;
   baseCost: string;
   serviceFee: string;
-  bookingFee: string;
 }
 
 export default function RevenueStats() {
@@ -107,11 +106,11 @@ export default function RevenueStats() {
           <span className="material-symbols-outlined text-primary">pie_chart</span>
           Revenue Breakdown
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Base Cost */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Base Cost</span>
+              <span className="text-sm text-gray-400">Base Cost (Turf Rental)</span>
               <span className="text-xs text-gray-500">
                 {((Number(stats.baseCost) / Number(stats.totalRevenue)) * 100).toFixed(1)}%
               </span>
@@ -130,7 +129,7 @@ export default function RevenueStats() {
           {/* Service Fee */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Service Fee (5%)</span>
+              <span className="text-sm text-gray-400">Platform Fee (5%)</span>
               <span className="text-xs text-gray-500">
                 {((Number(stats.serviceFee) / Number(stats.totalRevenue)) * 100).toFixed(1)}%
               </span>
@@ -144,25 +143,6 @@ export default function RevenueStats() {
               ></div>
             </div>
             <p className="text-2xl font-bold text-white">₹{stats.serviceFee}</p>
-          </div>
-
-          {/* Booking Fee */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Booking Fee</span>
-              <span className="text-xs text-gray-500">
-                {((Number(stats.bookingFee) / Number(stats.totalRevenue)) * 100).toFixed(1)}%
-              </span>
-            </div>
-            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-orange-500"
-                style={{
-                  width: `${(Number(stats.bookingFee) / Number(stats.totalRevenue)) * 100}%`,
-                }}
-              ></div>
-            </div>
-            <p className="text-2xl font-bold text-white">₹{stats.bookingFee}</p>
           </div>
         </div>
       </div>

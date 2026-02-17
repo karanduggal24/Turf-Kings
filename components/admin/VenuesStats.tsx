@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 interface StatsData {
+  totalVenues: number;
   totalTurfs: number;
   activeTurfs: number;
   maintenanceTurfs: number;
@@ -23,7 +24,7 @@ export default function VenuesStats() {
           setStats(data);
         }
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        // Error fetching stats
       } finally {
         setLoading(false);
       }
@@ -48,21 +49,21 @@ export default function VenuesStats() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {/* Total Registered Turfs */}
+      {/* Total Registered Venues */}
       <div className="bg-white/5 border border-primary/10 p-5 rounded-xl">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center rounded-lg">
             <span className="material-symbols-outlined">sports_soccer</span>
           </div>
           <span className="text-xs font-bold text-primary px-2 py-1 bg-primary/10 rounded-full">
-            +12%
+            {stats?.totalTurfs || 0} turfs
           </span>
         </div>
-        <div className="text-2xl font-bold text-white">{stats?.totalTurfs || 0}</div>
-        <div className="text-sm text-gray-400">Total Registered Turfs</div>
+        <div className="text-2xl font-bold text-white">{stats?.totalVenues || 0}</div>
+        <div className="text-sm text-gray-400">Total Registered Venues</div>
       </div>
 
-      {/* Rejected Turfs */}
+      {/* Rejected Venues */}
       <div className="bg-white/5 border border-primary/10 p-5 rounded-xl">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 bg-red-500/10 text-red-500 flex items-center justify-center rounded-lg">
@@ -73,7 +74,7 @@ export default function VenuesStats() {
           </span>
         </div>
         <div className="text-2xl font-bold text-white">{stats?.rejectedTurfs || 0}</div>
-        <div className="text-sm text-gray-400">Rejected Turfs</div>
+        <div className="text-sm text-gray-400">Rejected Venues</div>
       </div>
 
       {/* Avg Customer Rating */}

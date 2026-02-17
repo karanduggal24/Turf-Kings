@@ -22,19 +22,29 @@ const getSportIcon = (sportType: string): string => {
   }
 };
 
-// Helper function to convert database turf to TurfCard props
-const convertTurfToCardProps = (turf: any): TurfCardProps & { turfId: string } => {
+// Helper function to convert database venue to TurfCard props
+const convertTurfToCardProps = (venue: any): TurfCardProps & { 
+  turfId: string;
+  totalTurfs?: number;
+  availableSports?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+} => {
   return {
-    turfId: turf.id,
-    sport: turf.sport_type.charAt(0).toUpperCase() + turf.sport_type.slice(1),
-    sportIcon: getSportIcon(turf.sport_type),
-    name: turf.name,
-    location: `${turf.location}, ${turf.city}`,
-    distance: '2.5 km',
-    rating: turf.rating || 0,
-    amenities: turf.amenities?.slice(0, 3) || [],
-    price: turf.price_per_hour,
-    imageUrl: turf.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800'
+    turfId: venue.id,
+    sport: venue.sport_type.charAt(0).toUpperCase() + venue.sport_type.slice(1),
+    sportIcon: getSportIcon(venue.sport_type),
+    name: venue.name,
+    location: `${venue.city}, ${venue.state}`,
+    distance: venue.location,
+    rating: venue.rating || 0,
+    amenities: venue.amenities?.slice(0, 3) || [],
+    price: venue.price_per_hour,
+    imageUrl: venue.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800',
+    totalTurfs: venue.total_turfs,
+    availableSports: venue.available_sports,
+    minPrice: venue.min_price,
+    maxPrice: venue.max_price,
   };
 };
 
@@ -50,10 +60,10 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
           overscrollBehaviorX: 'contain'
         }}
       >
-        {turfs.map((turf) => (
+        {turfs.map((venue) => (
           <Link 
-            key={turf.id}
-            href={`/turfs/${turf.id}`}
+            key={venue.id}
+            href={`/turfs/${venue.id}`}
             className="shrink-0 w-72 h-[420px] block"
             style={{ scrollSnapAlign: 'start' }}
           >
@@ -61,46 +71,72 @@ function MobileCarousel({ turfs }: { turfs: any[] }) {
               <div className="group bg-surface-dark rounded-2xl overflow-hidden hover:shadow-neon-lg transition-all duration-300 border border-surface-highlight hover:border-primary h-full flex flex-col">
                 <div className="relative aspect-4/3 w-full overflow-hidden shrink-0">
                   <div className="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 border border-surface-highlight">
-                    <span className="material-symbols-outlined text-primary text-xs">{getSportIcon(turf.sport_type)}</span>
+                    <span className="material-symbols-outlined text-primary text-xs">{getSportIcon(venue.sport_type)}</span>
                     <span className="text-white text-xs font-bold uppercase tracking-wide">
-                      {turf.sport_type.charAt(0).toUpperCase() + turf.sport_type.slice(1)}
+                      {venue.sport_type.charAt(0).toUpperCase() + venue.sport_type.slice(1)}
                     </span>
                   </div>
+                  
+                  {/* Turf Count Badge */}
+                  {venue.total_turfs && venue.total_turfs > 0 && (
+                    <div className="absolute top-3 right-3 z-10 bg-primary/90 backdrop-blur-md px-2 py-1 rounded-full border border-primary">
+                      <span className="text-black text-xs font-bold">{venue.total_turfs} Turf{venue.total_turfs !== 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                  
                   <div 
                     className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" 
-                    style={{ backgroundImage: `url('${turf.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800'}')` }}
+                    style={{ backgroundImage: `url('${venue.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800'}')` }}
                   ></div>
                   <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
                     <span className="material-symbols-outlined text-yellow-400 text-xs">star</span>
-                    <span className="text-white text-xs font-bold">{turf.rating || 0}</span>
+                    <span className="text-white text-xs font-bold">{venue.rating || 0}</span>
                   </div>
                 </div>
                 
                 <div className="p-4 flex flex-col grow min-h-0">
                   <div className="mb-3">
-                    <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{turf.name}</h3>
+                    <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{venue.name}</h3>
                     <p className="text-gray-400 text-xs flex items-center gap-1 mt-1 line-clamp-1">
                       <span className="material-symbols-outlined text-xs">near_me</span> 
-                      {turf.location}, {turf.city} • 2.5 km away
+                      {venue.city}, {venue.state} • {venue.location}
                     </p>
                   </div>
                   
-                  <div className="mb-4 flex items-center gap-1 overflow-hidden flex-wrap">
-                    {(turf.amenities?.slice(0, 2) || []).map((amenity: string, index: number) => (
-                      <span key={index} className="px-2 py-1 bg-surface-highlight rounded-md text-xs text-gray-300 font-medium border border-surface-highlight whitespace-nowrap">
-                        {amenity}
-                      </span>
-                    ))}
-                    {turf.amenities?.length > 2 && (
-                      <span className="text-xs text-gray-400">+{turf.amenities.length - 2}</span>
-                    )}
-                  </div>
+                  {/* Available Sports */}
+                  {venue.available_sports && venue.available_sports.length > 0 ? (
+                    <div className="mb-4 flex items-center gap-1 overflow-hidden flex-wrap">
+                      {venue.available_sports.slice(0, 2).map((sport: string, index: number) => (
+                        <span key={index} className="flex items-center gap-1 px-2 py-1 bg-surface-highlight rounded-md text-xs text-gray-300 font-medium border border-surface-highlight whitespace-nowrap">
+                          <span className="material-symbols-outlined text-xs text-primary">{getSportIcon(sport)}</span>
+                          <span className="capitalize">{sport}</span>
+                        </span>
+                      ))}
+                      {venue.available_sports.length > 2 && (
+                        <span className="text-xs text-gray-400">+{venue.available_sports.length - 2}</span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="mb-4 flex items-center gap-1 overflow-hidden flex-wrap">
+                      {(venue.amenities?.slice(0, 2) || []).map((amenity: string, index: number) => (
+                        <span key={index} className="px-2 py-1 bg-surface-highlight rounded-md text-xs text-gray-300 font-medium border border-surface-highlight whitespace-nowrap">
+                          {amenity}
+                        </span>
+                      ))}
+                      {venue.amenities?.length > 2 && (
+                        <span className="text-xs text-gray-400">+{venue.amenities.length - 2}</span>
+                      )}
+                    </div>
+                  )}
                   
                   <div className="pt-3 border-t border-surface-highlight flex items-center justify-between mt-auto">
                     <div>
                       <p className="text-gray-400 text-xs">Starting from</p>
                       <p className="text-white font-bold text-sm">
-                        ₹{turf.price_per_hour}<span className="text-xs font-normal text-gray-400">/hr</span>
+                        {venue.min_price && venue.max_price && venue.min_price !== venue.max_price 
+                          ? `₹${venue.min_price} - ₹${venue.max_price}`
+                          : `₹${venue.price_per_hour}`
+                        }<span className="text-xs font-normal text-gray-400">/hr</span>
                       </p>
                     </div>
                     <span className="bg-primary hover:bg-primary-hover text-black px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 neon-glow-hover">
@@ -169,7 +205,7 @@ export default function FeaturedSection({ initialTurfs, initialError }: Featured
         </div>
         
         <div className="text-center py-12">
-          <p className="text-red-400 mb-4">❌ Failed to load turfs</p>
+          <p className="text-red-400 mb-4">❌ Failed to load venues</p>
           <p className="text-gray-400 mb-6">{currentError}</p>
           <button 
             onClick={() => handleRefetch()}
@@ -186,8 +222,8 @@ export default function FeaturedSection({ initialTurfs, initialError }: Featured
     <section className="py-20 px-4 md:px-10 lg:px-20 max-w-[1440px] mx-auto w-full bg-black">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
         <div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white">Featured Turfs</h2>
-          <p className="text-gray-400 mt-3 text-lg">Top rated grounds chosen by our community</p>
+          <h2 className="text-4xl md:text-5xl font-bold text-white">Featured Venues</h2>
+          <p className="text-gray-400 mt-3 text-lg">Top rated venues chosen by our community</p>
         </div>
         <div className="flex items-center gap-4">
           {isRefetching && (
@@ -208,7 +244,7 @@ export default function FeaturedSection({ initialTurfs, initialError }: Featured
 
       {turfs.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-400 text-lg">No turfs available at the moment</p>
+          <p className="text-gray-400 text-lg">No venues available at the moment</p>
           <p className="text-gray-500 text-sm mt-2">Check back later for new listings</p>
         </div>
       ) : (

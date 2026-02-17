@@ -8,37 +8,74 @@ export async function GET() {
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get all turfs with approval status
-    const { data: allTurfs, error: turfsError } = await supabase
-      .from('turfs')
+    // First, try a simple query without joins
+    const { data: allVenues, error: venuesError } = await supabase
+      .from('venues')
       .select('id, is_active, approval_status, rating');
 
-    if (turfsError) throw turfsError;
+    if (venuesError) {
+      console.error('Supabase error fetching venues:', venuesError);
+      return NextResponse.json(
+        { error: 'Database error', details: venuesError.message },
+        { status: 500 }
+      );
+    }
 
-    const totalTurfs = allTurfs?.length || 0;
-    const activeTurfs = allTurfs?.filter(t => t.is_active).length || 0;
-    
-    // Count rejected turfs
-    const rejectedTurfs = allTurfs?.filter(t => t.approval_status === 'rejected').length || 0;
-    
-    // Count maintenance mode turfs (approved but inactive)
-    const maintenanceTurfs = allTurfs?.filter(t => t.approval_status === 'approved' && !t.is_active).length || 0;
-    
-    // Calculate average rating
-    const ratingsSum = allTurfs?.reduce((sum, turf) => sum + (Number(turf.rating) || 0), 0) || 0;
-    const avgRating = totalTurfs > 0 ? (ratingsSum / totalTurfs).toFixed(1) : '0.0';
+    if (!allVenues) {
+      return NextResponse.json({
+        totalVenues: 0,
+        totalTurfs: 0,
+        activeVenues: 0,
+        maintenanceVenues: 0,
+        rejectedVenues: 0,
+        avgRating: 0,
+        activeTurfs: 0,
+        maintenanceTurfs: 0,
+        rejectedTurfs: 0,
+      });
+    }
 
-    return NextResponse.json({
+    // Now get turfs count separately
+    const { count: turfsCount } = await supabase
+      .from('turfs_new')
+      .select('*', { count: 'exact', head: true });
+
+    const totalVenues = allVenues.length;
+    const totalTurfs = turfsCount || 0;
+    
+    // Active venues: approved AND active
+    const activeVenues = allVenues.filter(v => v.is_active === true && v.approval_status === 'approved').length;
+    
+    // Rejected venues: approval_status is 'rejected'
+    const rejectedVenues = allVenues.filter(v => v.approval_status === 'rejected').length;
+    
+    // Maintenance mode venues: approved but NOT active (is_active = false)
+    const maintenanceVenues = allVenues.filter(v => v.approval_status === 'approved' && v.is_active === false).length;
+    
+    // Calculate average rating (only for approved venues)
+    const approvedVenues = allVenues.filter(v => v.approval_status === 'approved');
+    const ratingsSum = approvedVenues.reduce((sum, venue) => sum + (Number(venue.rating) || 0), 0);
+    const avgRating = approvedVenues.length > 0 ? (ratingsSum / approvedVenues.length).toFixed(1) : '0.0';
+
+    const response = {
+      totalVenues,
       totalTurfs,
-      activeTurfs,
-      maintenanceTurfs,
-      rejectedTurfs,
+      activeVenues,
+      maintenanceVenues,
+      rejectedVenues,
       avgRating: parseFloat(avgRating),
-    });
-  } catch (error) {
+      // Use consistent naming - these are the fields the component expects
+      activeTurfs: activeVenues,
+      maintenanceTurfs: maintenanceVenues,
+      rejectedTurfs: rejectedVenues,
+    };
+
+    console.log('Venues stats response:', response);
+    return NextResponse.json(response);
+  } catch (error: any) {
     console.error('Error fetching venue stats:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch venue stats' },
+      { error: 'Failed to fetch venue stats', details: error.message, stack: error.stack },
       { status: 500 }
     );
   }

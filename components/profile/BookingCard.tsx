@@ -38,25 +38,40 @@ export default function BookingCard({ booking, isPast }: BookingCardProps) {
     }
   };
 
+  const handleViewReceipt = () => {
+    router.push(`/bookings/${booking.id}`);
+  };
+
+  // Get venue and turf names
+  const venueName = (booking as any).venue?.name || booking.turf?.name || 'Venue';
+  const turfName = (booking as any).turf?.name || 'Turf';
+  const displayName = (booking as any).venue?.name 
+    ? `${venueName} (${turfName})`
+    : turfName;
+
+  // Get venue image
+  const venueImage = (booking as any).venue?.images?.[0] || booking.turf?.images?.[0];
+
   return (
     <div
-      className={`bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/30 transition-all p-5 rounded-xl flex flex-col md:flex-row items-start md:items-center gap-6 ${
+      onClick={handleViewReceipt}
+      className={`bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 transition-all p-5 rounded-xl flex flex-col md:flex-row items-start md:items-center gap-6 cursor-pointer group ${
         isPast ? 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100' : ''
       }`}
     >
-      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-surface-dark relative">
-        {booking.turf?.images?.[0] ? (
+      <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-dark relative border border-surface-highlight group-hover:border-primary transition-colors">
+        {venueImage ? (
           <Image
-            src={booking.turf.images[0]}
-            alt={booking.turf.name}
+            src={venueImage}
+            alt={displayName}
             fill
-            sizes="80px"
-            className="object-cover"
+            sizes="96px"
+            className="object-cover group-hover:scale-110 transition-transform duration-300"
             loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="material-symbols-outlined text-4xl text-gray-600">
+            <span className="material-symbols-outlined text-4xl text-gray-600 group-hover:text-primary transition-colors">
               stadium
             </span>
           </div>
@@ -68,8 +83,8 @@ export default function BookingCard({ booking, isPast }: BookingCardProps) {
           <span className="material-symbols-outlined text-primary text-sm">
             sports_soccer
           </span>
-          <h3 className="font-bold text-lg text-white">
-            {booking.turf?.name || 'Turf Name'}
+          <h3 className="font-bold text-lg text-white group-hover:text-primary transition-colors">
+            {displayName}
           </h3>
         </div>
         <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-gray-400">
@@ -90,21 +105,10 @@ export default function BookingCard({ booking, isPast }: BookingCardProps) {
 
       <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4">
         {getStatusBadge(booking.status)}
-        {booking.status === 'pending' && (
-          <Button size="sm" className="uppercase">
-            Pay Now
-          </Button>
-        )}
-        {booking.status === 'completed' && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push(`/turfs/${booking.turf_id}`)}
-            className="uppercase"
-          >
-            Rebook
-          </Button>
-        )}
+        <div className="flex items-center gap-2 text-sm text-gray-400 group-hover:text-primary transition-colors">
+          <span>View Receipt</span>
+          <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import VenueForm from '@/components/venue/VenueForm';
+import VenueFormNew from '@/components/venue/VenueFormNew';
 import { useAuthStore } from '@/stores/authStore';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
@@ -85,7 +85,7 @@ export default function ListVenueClient() {
             </div>
           </div>
 
-          <VenueForm userId={user.id} />
+          <VenueFormNew userId={user.id} />
         </div>
       </main>
 

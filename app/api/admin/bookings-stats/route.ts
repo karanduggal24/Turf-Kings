@@ -11,7 +11,7 @@ export async function GET() {
 
     // Get today's bookings
     const { data: todayBookings, error: todayError } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('id')
       .eq('booking_date', today);
 
@@ -19,7 +19,7 @@ export async function GET() {
 
     // Get pending payments
     const { data: pendingPayments, error: pendingError } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('id')
       .eq('payment_status', 'pending');
 
@@ -27,7 +27,7 @@ export async function GET() {
 
     // Get today's revenue
     const { data: todayRevenue, error: revenueError } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('total_amount')
       .eq('booking_date', today)
       .eq('payment_status', 'paid');

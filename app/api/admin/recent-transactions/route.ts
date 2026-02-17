@@ -9,7 +9,7 @@ export async function GET() {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data, error } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select(`
         id,
         booking_date,
@@ -17,7 +17,7 @@ export async function GET() {
         end_time,
         total_amount,
         status,
-        turfs (
+        turf:turfs_new (
           name
         )
       `)
@@ -29,7 +29,7 @@ export async function GET() {
 
     const transactions = data?.map((booking: any) => ({
       id: booking.id,
-      turfName: booking.turfs?.name || 'Unknown Turf',
+      turfName: booking.turf?.name || 'Unknown Turf',
       date: booking.booking_date,
       startTime: booking.start_time,
       endTime: booking.end_time,

@@ -41,13 +41,21 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch stats using service role
+    // Count active venues (not individual turfs)
+    const { count: venuesCount } = await supabase
+      .from('venues')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .eq('approval_status', 'approved');
+
+    // Count total turfs across all venues
     const { count: turfsCount } = await supabase
-      .from('turfs')
+      .from('turfs_new')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true);
 
     const { count: bookingsCount } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('*', { count: 'exact', head: true });
 
     const { count: usersCount } = await supabase
@@ -56,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate revenue (sum of all bookings)
     const { data: bookings } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('total_amount');
 
     const totalRevenue = bookings?.reduce((sum, b) => sum + (b.total_amount || 0), 0) || 0;
@@ -65,7 +73,7 @@ export async function GET(request: NextRequest) {
       stats: {
         monthlyRevenue: totalRevenue,
         revenueChange: 12.5,
-        activeTurfs: turfsCount || 0,
+        activeTurfs: turfsCount || 0, // Total active turfs
         turfsChange: 4,
         dailyBookings: bookingsCount || 0,
         bookingsChange: 18,

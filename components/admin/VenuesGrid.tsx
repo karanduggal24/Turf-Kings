@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import Button from '@/components/common/Button';
-import Image from 'next/image';
+import AlertModal from '@/components/common/AlertModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
+import VenueCard from './venues/VenueCard';
+import VenueGridPagination from './venues/VenueGridPagination';
 
 interface Turf {
   id: string;
@@ -15,6 +16,7 @@ interface Turf {
   images: string[];
   rating: number;
   total_reviews: number;
+  total_turfs?: number;
   is_active: boolean;
   owner: {
     full_name: string;
@@ -36,15 +38,24 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [venueToDelete, setVenueToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
 
-  // Debounce search query
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   useEffect(() => {
     fetchTurfs();
   }, [page, debouncedSearchQuery]);
 
-  // Reset to page 1 when search changes
   useEffect(() => {
     setPage(1);
   }, [debouncedSearchQuery]);
@@ -80,11 +91,9 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
       });
 
       if (response.ok) {
-        // Update local state
         setTurfs(turfs.map(turf => 
           turf.id === turfId ? { ...turf, is_active: !currentStatus } : turf
         ));
-        // Trigger stats refresh
         onStatsChange();
       }
     } catch (error) {
@@ -111,30 +120,34 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
       const data = await response.json();
 
       if (response.ok) {
-        // Remove from local state
         setTurfs(turfs.filter(turf => turf.id !== venueToDelete.id));
         setDeleteModalOpen(false);
         setVenueToDelete(null);
-        // Trigger stats refresh
         onStatsChange();
+        setAlertModal({
+          isOpen: true,
+          title: 'Venue Deleted',
+          message: 'The venue has been successfully deleted.',
+          type: 'success'
+        });
       } else {
-        alert(`Failed to delete venue: ${data.error || 'Unknown error'}`);
+        setAlertModal({
+          isOpen: true,
+          title: 'Deletion Failed',
+          message: data.error || 'Failed to delete venue. Please try again.',
+          type: 'error'
+        });
       }
     } catch (error: any) {
-      console.error('Error deleting venue:', error);
-      alert(`Error deleting venue: ${error.message || 'Network error'}`);
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: error.message || 'Network error occurred. Please try again.',
+        type: 'error'
+      });
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   if (loading) {
@@ -145,103 +158,17 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {turfs.map((turf) => (
-          <div
-            key={turf.id}
-            className="group bg-white/5 border border-primary/5 rounded-xl overflow-hidden hover:border-primary/40 transition-all duration-300"
-          >
-            {/* Image */}
-            <div className="relative h-48 overflow-hidden">
-              <Image
-                src={turf.images[0] || '/placeholder-turf.jpg'}
-                alt={turf.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-                loading="lazy"
-              />
-              <div className="absolute top-4 left-4 flex items-center gap-2">
-                <span
-                  className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full ${
-                    turf.is_active
-                      ? 'bg-primary text-black'
-                      : 'bg-gray-500 text-white'
-                  }`}
-                >
-                  {turf.is_active && (
-                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse"></span>
-                  )}
-                  {turf.is_active ? 'ACTIVE' : 'INACTIVE'}
-                </span>
-              </div>
-              <div className="absolute top-4 right-4 flex gap-2">
-                <a
-                  href={`/admin/venues/edit/${turf.id}`}
-                  className="w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-primary hover:text-black transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">edit</span>
-                </a>
-                <button
-                  onClick={() => handleDeleteClick(turf)}
-                  className="w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">delete</span>
-                </button>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
-              <div className="absolute bottom-4 left-4">
-                <h3 className="text-white font-bold text-lg">{turf.name}</h3>
-                <p className="text-gray-300 text-xs flex items-center gap-1">
-                  <span className="material-symbols-outlined text-xs">location_on</span>
-                  {turf.location}, {turf.city}
-                </p>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-primary/10">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">
-                    Owner
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
-                      {getInitials(turf.owner?.full_name || 'U')}
-                    </div>
-                    <span className="text-sm font-medium text-white">
-                      {turf.owner?.full_name || 'Unknown'}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">
-                    Rating
-                  </p>
-                  <div className="flex items-center gap-1 text-yellow-500">
-                    <span className="material-symbols-outlined text-sm">star</span>
-                    <span className="text-sm font-bold text-white">{turf.rating || 0}</span>
-                    <span className="text-[10px] text-gray-500">({turf.total_reviews || 0})</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Maintenance Toggle */}
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-gray-400">Maintenance Mode</span>
-                  <span className="text-[10px] text-gray-500">Users cannot book while ON</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={!turf.is_active}
-                    onChange={() => toggleMaintenance(turf.id, turf.is_active)}
-                  />
-                  <div className="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-              </div>
-            </div>
+          <div key={turf.id} className="relative">
+            <VenueCard
+              venue={turf}
+              onToggleMaintenance={toggleMaintenance}
+            />
+            <button
+              onClick={() => handleDeleteClick(turf)}
+              className="absolute top-4 right-4 w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors z-10"
+            >
+              <span className="material-symbols-outlined text-sm">delete</span>
+            </button>
           </div>
         ))}
 
@@ -260,48 +187,14 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
         </a>
       </div>
 
-      {/* Pagination */}
-      <div className="mt-12 flex items-center justify-between border-t border-primary/10 pt-6">
-        <p className="text-sm text-gray-400">
-          Showing <span className="font-bold text-white">{turfs.length}</span> of{' '}
-          <span className="font-bold text-white">{total}</span> venues
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
-            variant="ghost"
-            size="sm"
-            icon="chevron_left"
-          >
-            
-          </Button>
-          {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map((pageNum) => (
-            <button
-              key={pageNum}
-              onClick={() => setPage(pageNum)}
-              className={`w-10 h-10 rounded-lg transition-all ${
-                page === pageNum
-                  ? 'bg-primary text-black font-bold shadow-sm'
-                  : 'border border-primary/20 hover:bg-primary/10 text-white'
-              }`}
-            >
-              {pageNum}
-            </button>
-          ))}
-          <Button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages}
-            variant="ghost"
-            size="sm"
-            icon="chevron_right"
-          >
-            
-          </Button>
-        </div>
-      </div>
+      <VenueGridPagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        displayCount={turfs.length}
+        onPageChange={setPage}
+      />
 
-      {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal
         isOpen={deleteModalOpen}
         onClose={() => {
@@ -311,6 +204,14 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
         onConfirm={handleDeleteConfirm}
         venueName={venueToDelete?.name || ''}
         isDeleting={isDeleting}
+      />
+
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
       />
     </>
   );

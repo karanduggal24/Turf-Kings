@@ -13,12 +13,16 @@ export async function GET() {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Query to get distinct sport types from turfs table (only active/approved ones for filtering)
+    // Query to get distinct sport types from turfs_new table (only active turfs in approved venues)
     const { data, error } = await supabase
-      .from('turfs')
-      .select('sport_type')
+      .from('turfs_new')
+      .select(`
+        sport_type,
+        venue:venues!inner(is_active, approval_status)
+      `)
       .eq('is_active', true)
-      .eq('approval_status', 'approved');
+      .eq('venue.is_active', true)
+      .eq('venue.approval_status', 'approved');
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -33,7 +37,8 @@ export async function GET() {
         value: sport,
         label: sportTypeMap[sport].label,
         icon: sportTypeMap[sport].icon,
-      }));
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
 
     // Return all available sport types for venue creation (from enum)
     const allSportsOptions = Object.entries(sportTypeMap).map(([value, { label, icon }]) => ({

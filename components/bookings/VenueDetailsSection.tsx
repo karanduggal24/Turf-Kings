@@ -2,11 +2,12 @@ import { VenueDetailsSectionProps } from './booking-types';
 
 export default function VenueDetailsSection({
   turfName,
+  venueName,
   location,
   city,
   state,
   phone,
-}: VenueDetailsSectionProps) {
+}: VenueDetailsSectionProps & { venueName?: string }) {
   return (
     <section className="bg-white/5 border border-primary/10 rounded-xl p-6 print-section print-break-avoid">
       <div className="flex items-center gap-3 mb-4">
@@ -14,8 +15,14 @@ export default function VenueDetailsSection({
         <h3 className="font-bold text-lg text-white print-text">Venue Details</h3>
       </div>
       <div className="space-y-4">
+        {venueName && (
+          <div>
+            <p className="text-gray-400 text-sm print-text-gray">Venue Name</p>
+            <p className="font-medium text-white print-text">{venueName}</p>
+          </div>
+        )}
         <div>
-          <p className="text-gray-400 text-sm print-text-gray">Turf Name</p>
+          <p className="text-gray-400 text-sm print-text-gray">Turf/Pitch</p>
           <p className="font-medium text-white print-text">{turfName}</p>
         </div>
         <div>

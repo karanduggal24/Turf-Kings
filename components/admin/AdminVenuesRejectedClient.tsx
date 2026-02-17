@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import RejectedTurfsTable from './RejectedTurfsTable';
+import RejectedVenuesTable from './RejectedVenuesTable';
 import VenuesSubNav from './VenuesSubNav';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -29,7 +29,7 @@ export default function AdminVenuesRejectedClient() {
               </span>
               <input
                 className="pl-10 pr-4 py-2.5 bg-black border border-primary/20 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none w-64 md:w-80 transition-all text-sm text-white placeholder:text-gray-500"
-                placeholder="Search turfs, owners..."
+                placeholder="Search venues, owners..."
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -51,7 +51,7 @@ export default function AdminVenuesRejectedClient() {
 
       {/* Content */}
       <div className="p-6 lg:p-10 pt-0">
-        <RejectedTurfsTable searchQuery={debouncedSearchQuery} />
+        <RejectedVenuesTable searchQuery={debouncedSearchQuery} />
       </div>
     </>
   );

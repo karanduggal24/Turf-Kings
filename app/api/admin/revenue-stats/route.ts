@@ -23,7 +23,7 @@ export async function GET() {
 
     // Today's earnings
     const { data: todayData, error: todayError } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('total_amount')
       .eq('booking_date', today)
       .in('payment_status', ['paid']);
@@ -38,7 +38,7 @@ export async function GET() {
     const yesterdayStr = yesterday.toISOString().split('T')[0];
 
     const { data: yesterdayData } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('total_amount')
       .eq('booking_date', yesterdayStr)
       .in('payment_status', ['paid']);
@@ -48,7 +48,7 @@ export async function GET() {
 
     // This week's earnings
     const { data: weekData, error: weekError } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('total_amount')
       .gte('booking_date', weekStartStr)
       .lte('booking_date', today)
@@ -65,7 +65,7 @@ export async function GET() {
     const prevWeekEndStr = weekStartStr;
 
     const { data: prevWeekData } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('total_amount')
       .gte('booking_date', prevWeekStartStr)
       .lt('booking_date', prevWeekEndStr)
@@ -76,7 +76,7 @@ export async function GET() {
 
     // Pending payouts (completed bookings with paid status)
     const { data: pendingData, error: pendingError } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select('total_amount')
       .eq('status', 'completed')
       .eq('payment_status', 'paid');
@@ -87,16 +87,16 @@ export async function GET() {
 
     // Total profit (all paid bookings)
     const { data: totalData, error: totalError } = await supabase
-      .from('bookings')
-      .select('total_amount, base_amount, service_fee, booking_fee')
+      .from('bookings_new')
+      .select('total_amount')
       .eq('payment_status', 'paid');
 
     if (totalError) throw totalError;
 
     const totalRevenue = totalData?.reduce((sum, booking) => sum + Number(booking.total_amount), 0) || 0;
-    const totalBaseCost = totalData?.reduce((sum, booking) => sum + Number(booking.base_amount || 0), 0) || 0;
-    const totalServiceFee = totalData?.reduce((sum, booking) => sum + Number(booking.service_fee || 0), 0) || 0;
-    const totalBookingFee = totalData?.reduce((sum, booking) => sum + Number(booking.booking_fee || 0), 0) || 0;
+    // Service fee is 5% of total
+    const totalServiceFee = totalRevenue * 0.05;
+    const totalBaseCost = totalRevenue - totalServiceFee;
 
     return NextResponse.json({
       success: true,
@@ -110,7 +110,6 @@ export async function GET() {
         totalRevenue: totalRevenue.toFixed(2),
         baseCost: totalBaseCost.toFixed(2),
         serviceFee: totalServiceFee.toFixed(2),
-        bookingFee: totalBookingFee.toFixed(2),
       },
     });
   } catch (error) {

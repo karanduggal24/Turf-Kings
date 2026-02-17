@@ -39,10 +39,11 @@ export async function GET(request: NextRequest) {
     }
 
     let query = supabase
-      .from('bookings')
+      .from('bookings_new')
       .select(`
         *,
-        turf:turfs(name, location, city, images),
+        turf:turfs_new(id, name, sport_type, price_per_hour),
+        venue:venues(name, location, city, state, phone, images),
         user:users(full_name, email, phone)
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
     );
 
     const { data: existingBookings, error: checkError } = await serviceSupabase
-      .from('bookings')
+      .from('bookings_new')
       .select('id, start_time, end_time, status')
       .eq('turf_id', turf_id)
       .eq('booking_date', booking_date)
@@ -176,16 +177,14 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: booking, error } = await serviceSupabase
-      .from('bookings')
+      .from('bookings_new')
       .insert({
         user_id: user.id,
         turf_id,
+        venue_id: body.venue_id,
         booking_date,
         start_time,
         end_time,
-        base_amount,
-        service_fee,
-        booking_fee,
         total_amount,
         status: 'confirmed',
         payment_status: 'paid',
@@ -193,7 +192,8 @@ export async function POST(request: NextRequest) {
       })
       .select(`
         *,
-        turf:turfs(name, location, city, state, phone),
+        turf:turfs_new(id, name, sport_type, price_per_hour),
+        venue:venues(name, location, city, state, phone),
         user:users(full_name, email, phone)
       `)
       .single()

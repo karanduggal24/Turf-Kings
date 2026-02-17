@@ -83,7 +83,11 @@ export default function BookingConfirmationClient({ bookingId }: BookingConfirma
       
       <div className="min-h-screen bg-black py-12 px-4 print-container">
         <div className="max-w-5xl mx-auto">
-          <BookingHeader turfName={booking.turf.name} />
+          <BookingHeader 
+            turfName={booking.turf.name} 
+            venueName={booking.venue.name}
+            venueImage={booking.venue.images?.[0]}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
@@ -101,10 +105,11 @@ export default function BookingConfirmationClient({ bookingId }: BookingConfirma
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <VenueDetailsSection
                   turfName={booking.turf.name}
-                  location={booking.turf.location}
-                  city={booking.turf.city}
-                  state={booking.turf.state}
-                  phone={booking.turf.phone}
+                  venueName={booking.venue.name}
+                  location={booking.venue.location}
+                  city={booking.venue.city}
+                  state={booking.venue.state}
+                  phone={booking.venue.phone}
                 />
 
                 <UserDetailsSection

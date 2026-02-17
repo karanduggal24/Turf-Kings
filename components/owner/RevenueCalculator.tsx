@@ -60,6 +60,7 @@ export default function RevenueCalculator() {
                         max="24"
                         value={hoursPerDay}
                         onChange={(e) => handleHoursChange(e.target.value)}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-20 bg-black/40 border border-primary/30 rounded-lg px-3 py-1 text-white text-center text-xl font-black focus:outline-none focus:border-primary"
                       />
                       <span className="text-xs text-primary font-bold">HRS</span>
@@ -89,6 +90,7 @@ export default function RevenueCalculator() {
                         max="3000"
                         value={pricePerHour}
                         onChange={(e) => handlePriceChange(e.target.value)}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-24 bg-black/40 border border-primary/30 rounded-lg px-3 py-1 text-white text-center text-xl font-black focus:outline-none focus:border-primary"
                       />
                       <span className="text-xs text-primary font-bold">INR</span>

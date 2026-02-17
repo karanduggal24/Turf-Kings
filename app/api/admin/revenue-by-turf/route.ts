@@ -9,11 +9,11 @@ export async function GET() {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data, error } = await supabase
-      .from('bookings')
+      .from('bookings_new')
       .select(`
         turf_id,
         total_amount,
-        turfs (
+        turf:turfs_new (
           name
         )
       `)
@@ -26,7 +26,7 @@ export async function GET() {
     
     data?.forEach((booking: any) => {
       const turfId = booking.turf_id;
-      const turfName = booking.turfs?.name || 'Unknown Turf';
+      const turfName = booking.turf?.name || 'Unknown Turf';
       
       if (!revenueByTurf[turfId]) {
         revenueByTurf[turfId] = { name: turfName, amount: 0 };

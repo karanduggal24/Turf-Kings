@@ -59,6 +59,10 @@ export default function TurfsGridContent({ turfs, loading, error }: TurfsGridCon
           amenities={turf.amenities}
           price={turf.price_per_hour}
           imageUrl={turf.images[0] || '/placeholder-turf.jpg'}
+          totalTurfs={(turf as any).total_turfs}
+          availableSports={(turf as any).available_sports}
+          minPrice={(turf as any).min_price}
+          maxPrice={(turf as any).max_price}
         />
       ))}
     </div>

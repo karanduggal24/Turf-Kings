@@ -9,6 +9,7 @@ interface VenueLocationFieldsProps {
   errors: Record<string, string>;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  hidePrice?: boolean;
 }
 
 export default function VenueLocationFields({
@@ -20,6 +21,7 @@ export default function VenueLocationFields({
   errors,
   onChange,
   onPhoneChange,
+  hidePrice = false,
 }: VenueLocationFieldsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -101,27 +103,30 @@ export default function VenueLocationFields({
         <p className="text-gray-500 text-xs">Enter 10-digit phone number</p>
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-bold text-gray-200" htmlFor="pricePerHour">
-          Price Per Hour (₹) <span className="text-primary">*</span>
-        </label>
-        <input
-          type="number"
-          id="pricePerHour"
-          name="pricePerHour"
-          value={pricePerHour}
-          onChange={onChange}
-          min="1"
-          max="100000"
-          step="1"
-          className={`w-full px-4 py-3 rounded-lg bg-black/40 border ${
-            errors.pricePerHour ? 'border-red-500' : 'border-primary/20'
-          } focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white`}
-          placeholder="e.g. 1500"
-          required
-        />
-        {errors.pricePerHour && <p className="text-red-500 text-xs mt-1">{errors.pricePerHour}</p>}
-      </div>
+      {!hidePrice && (
+        <div className="space-y-2">
+          <label className="block text-sm font-bold text-gray-200" htmlFor="pricePerHour">
+            Price Per Hour (₹) <span className="text-primary">*</span>
+          </label>
+          <input
+            type="number"
+            id="pricePerHour"
+            name="pricePerHour"
+            value={pricePerHour}
+            onChange={onChange}
+            onWheel={(e) => e.currentTarget.blur()}
+            min="1"
+            max="100000"
+            step="1"
+            className={`w-full px-4 py-3 rounded-lg bg-black/40 border ${
+              errors.pricePerHour ? 'border-red-500' : 'border-primary/20'
+            } focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white`}
+            placeholder="e.g. 1500"
+            required
+          />
+          {errors.pricePerHour && <p className="text-red-500 text-xs mt-1">{errors.pricePerHour}</p>}
+        </div>
+      )}
     </div>
   );
 }

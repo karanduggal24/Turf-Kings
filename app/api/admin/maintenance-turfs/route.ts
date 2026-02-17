@@ -15,28 +15,38 @@ export async function GET(request: Request) {
     
     const offset = (page - 1) * limit;
 
-    // Build query - show approved turfs that are in maintenance mode (inactive)
+    // Build query - show approved venues that are in maintenance mode (inactive)
     let query = supabase
-      .from('turfs')
+      .from('venues')
       .select(`
         *,
-        owner:users!turfs_owner_id_fkey(full_name, email)
+        owner:users!venues_owner_id_fkey(full_name, email),
+        turfs:turfs_new(id, name, sport_type, price_per_hour, is_active)
       `, { count: 'exact' })
-      .eq('approval_status', 'approved')  // Only approved turfs
-      .eq('is_active', false)  // But currently inactive (maintenance mode)
+      .eq('approval_status', 'approved')
+      .eq('is_active', false)
       .order('created_at', { ascending: false });
 
     // Search filter
     if (search) {
-      query = query.or(`name.ilike.%${search}%,location.ilike.%${search}%`);
+      query = query.or(`name.ilike.%${search}%,location.ilike.%${search}%,city.ilike.%${search}%`);
     }
 
-    const { data: turfs, error, count } = await query.range(offset, offset + limit - 1);
+    const { data: venues, error, count } = await query.range(offset, offset + limit - 1);
 
     if (error) throw error;
 
+    // Transform data to include turf counts and sports
+    const transformedVenues = (venues || []).map(venue => ({
+      ...venue,
+      total_turfs: venue.turfs?.length || 0,
+      available_sports: [...new Set(venue.turfs?.map((t: any) => t.sport_type) || [])],
+      min_price: venue.turfs?.length > 0 ? Math.min(...venue.turfs.map((t: any) => t.price_per_hour)) : 0,
+      max_price: venue.turfs?.length > 0 ? Math.max(...venue.turfs.map((t: any) => t.price_per_hour)) : 0,
+    }));
+
     return NextResponse.json({
-      turfs: turfs || [],
+      venues: transformedVenues,
       pagination: {
         page,
         limit,
@@ -45,9 +55,8 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error('Error fetching maintenance turfs:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch maintenance turfs' },
+      { error: 'Failed to fetch maintenance venues' },
       { status: 500 }
     );
   }

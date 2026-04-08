@@ -27,7 +27,7 @@ export default function OwnerHero() {
           
           <h1 className="text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight">
             Turn Your <span className="text-primary">Turf</span> <br/>
-            Into a Business.
+            Into a <span className="text-primary">Business.</span> 
           </h1>
           
           <p className="text-xl text-gray-300 mb-10 max-w-2xl font-light leading-relaxed">

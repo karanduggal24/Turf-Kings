@@ -15,7 +15,7 @@ export default function AboutPageClient() {
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: "url('https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=2070&auto=format&fit=crop')",
+              backgroundImage: "url('https://res.cloudinary.com/dsnewvfyp/image/upload/v1775629031/photo-1459865264687-595d652de67e_nxn0hs.jpg')",
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-background-dark/60 via-background-dark/80 to-background-dark" />

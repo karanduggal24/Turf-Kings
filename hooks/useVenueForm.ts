@@ -5,6 +5,8 @@ interface TurfData {
   name: string;
   sportType: string;
   pricePerHour: string;
+  openTime?: string;
+  closeTime?: string;
 }
 
 interface VenueFormData {
@@ -42,6 +44,8 @@ export function useVenueForm({ initialData, initialTurfs }: UseVenueFormProps = 
       name: '',
       sportType: 'football',
       pricePerHour: '',
+      openTime: '06:00',
+      closeTime: '22:00',
     }]
   );
 
@@ -86,6 +90,8 @@ export function useVenueForm({ initialData, initialTurfs }: UseVenueFormProps = 
       name: '',
       sportType: 'football',
       pricePerHour: '',
+      openTime: '06:00',
+      closeTime: '22:00',
     }]);
     return { success: true };
   };

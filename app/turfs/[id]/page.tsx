@@ -3,11 +3,27 @@ import Footer from '@/components/Footer';
 import VenueDetailClient from '@/components/venue/VenueDetailClient';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { notFound } from 'next/navigation';
+import { buildVenueMetadata } from '@/lib/metadata';
+import type { Metadata } from 'next';
 
 interface TurfDetailPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: TurfDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
+
+  const { data: venue } = await supabase
+    .from('venues')
+    .select('name, description, city, state, images, amenities')
+    .eq('id', id)
+    .eq('is_active', true)
+    .eq('approval_status', 'approved')
+    .single();
+
+  if (!venue) return { title: 'Venue Not Found' };
+  return buildVenueMetadata(venue);
 }
 
 export default async function TurfDetailPage({ params }: TurfDetailPageProps) {
@@ -20,7 +36,7 @@ export default async function TurfDetailPage({ params }: TurfDetailPageProps) {
     .select(`
       *,
       owner:users!venues_owner_id_fkey(full_name, email, phone),
-      turfs:turfs_new(id, name, sport_type, price_per_hour, is_active),
+      turfs:turfs_new(id, name, sport_type, price_per_hour, is_active, open_time, close_time),
       reviews:reviews_new(id, rating, comment, created_at, user:users(full_name))
     `)
     .eq('id', id)

@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 import { User, AuthError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { AuthState, AUTH_STORE_CONFIG } from '@/app/constants/auth-types'
+import { authApi, ApiError } from '@/lib/api'
 
 export const useAuthStore = create<AuthState>()(
   devtools(
@@ -22,33 +23,11 @@ export const useAuthStore = create<AuthState>()(
 
         signUp: async (email: string, password: string, fullName?: string, phone?: string, location?: string) => {
           set({ loading: true, error: null }, false, 'signUp/start')
-          
           try {
-            // Call our custom signup API
-            const response = await fetch('/api/auth/signup', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ email, password, fullName, phone, location }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              set({ error: data.error, loading: false }, false, 'signUp/error')
-              return { data: null, error: { message: data.error } as AuthError };
-            }
-
-            // Set the session in Supabase client
-            if (data.session) {
-              await supabase.auth.setSession(data.session);
-            }
-
-            // User is created and logged in
+            const data: any = await authApi.signUp({ email, password, fullName, phone, location });
+            if (data.session) await supabase.auth.setSession(data.session);
             set({ user: data.user, loading: false }, false, 'signUp/success')
             return { data: { user: data.user, session: data.session }, error: null };
-
           } catch (error: any) {
             const errorMessage = error.message || 'An unexpected error occurred during sign up'
             set({ error: errorMessage, loading: false }, false, 'signUp/catch')
@@ -58,32 +37,11 @@ export const useAuthStore = create<AuthState>()(
 
         signIn: async (identifier: string, password: string) => {
           set({ loading: true, error: null }, false, 'signIn/start')
-          
           try {
-            // Call our custom login API that handles both email and phone
-            const response = await fetch('/api/auth/login', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ identifier, password }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              set({ error: data.error, loading: false }, false, 'signIn/error')
-              return { data: null, error: { message: data.error } as AuthError };
-            }
-
-            // Set the session in Supabase client
-            if (data.session) {
-              await supabase.auth.setSession(data.session);
-            }
-
+            const data: any = await authApi.signIn({ identifier, password });
+            if (data.session) await supabase.auth.setSession(data.session);
             set({ user: data.user, loading: false }, false, 'signIn/success')
             return { data: { user: data.user, session: data.session }, error: null };
-
           } catch (error: any) {
             const errorMessage = error.message || 'An unexpected error occurred during sign in'
             set({ error: errorMessage, loading: false }, false, 'signIn/catch')

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import VenueFormEditNew from '@/components/venue/VenueFormEditNew';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import Button from '@/components/common/Button';
+import { adminApi } from '@/lib/api';
 
 interface EditVenueClientProps {
   turfId: string;
@@ -23,17 +24,9 @@ export default function EditVenueClient({ turfId }: EditVenueClientProps) {
   async function fetchVenue() {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/turfs/${turfId}`);
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch venue details');
-      }
-
+      const data: any = await adminApi.getTurf(turfId);
       setVenue(data.venue || data.turf);
     } catch (err: any) {
-      console.error('Error fetching venue:', err);
       setError(err.message || 'Failed to load venue');
     } finally {
       setLoading(false);

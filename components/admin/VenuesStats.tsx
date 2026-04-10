@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 
 interface StatsData {
   totalVenues: number;
@@ -18,18 +19,11 @@ export default function VenuesStats() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch('/api/admin/venues-stats');
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
-      } catch (error) {
-        // Error fetching stats
-      } finally {
-        setLoading(false);
-      }
+        const data: any = await adminApi.getVenuesStats();
+        setStats(data);
+      } catch {}
+      finally { setLoading(false); }
     }
-
     fetchStats();
   }, []);
 
@@ -49,7 +43,6 @@ export default function VenuesStats() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {/* Total Registered Venues */}
       <div className="bg-white/5 border border-primary/10 p-5 rounded-xl">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center rounded-lg">
@@ -63,43 +56,34 @@ export default function VenuesStats() {
         <div className="text-sm text-gray-400">Total Registered Venues</div>
       </div>
 
-      {/* Rejected Venues */}
       <div className="bg-white/5 border border-primary/10 p-5 rounded-xl">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 bg-red-500/10 text-red-500 flex items-center justify-center rounded-lg">
             <span className="material-symbols-outlined">cancel</span>
           </div>
-          <span className="text-xs font-bold text-red-500 px-2 py-1 bg-red-500/10 rounded-full">
-            Rejected
-          </span>
+          <span className="text-xs font-bold text-red-500 px-2 py-1 bg-red-500/10 rounded-full">Rejected</span>
         </div>
         <div className="text-2xl font-bold text-white">{stats?.rejectedTurfs || 0}</div>
         <div className="text-sm text-gray-400">Rejected Venues</div>
       </div>
 
-      {/* Avg Customer Rating */}
       <div className="bg-white/5 border border-primary/10 p-5 rounded-xl">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 bg-yellow-500/10 text-yellow-500 flex items-center justify-center rounded-lg">
             <span className="material-symbols-outlined">star</span>
           </div>
-          <span className="text-xs font-bold text-yellow-500 px-2 py-1 bg-yellow-500/10 rounded-full">
-            Top Rated
-          </span>
+          <span className="text-xs font-bold text-yellow-500 px-2 py-1 bg-yellow-500/10 rounded-full">Top Rated</span>
         </div>
         <div className="text-2xl font-bold text-white">{stats?.avgRating || 0}</div>
         <div className="text-sm text-gray-400">Avg. Customer Rating</div>
       </div>
 
-      {/* Maintenance Mode */}
       <div className="bg-white/5 border border-primary/10 p-5 rounded-xl">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center rounded-lg">
             <span className="material-symbols-outlined">construction</span>
           </div>
-          <span className="text-xs font-bold text-gray-400 px-2 py-1 bg-gray-400/10 rounded-full">
-            Inactive
-          </span>
+          <span className="text-xs font-bold text-gray-400 px-2 py-1 bg-gray-400/10 rounded-full">Inactive</span>
         </div>
         <div className="text-2xl font-bold text-white">{String(stats?.maintenanceTurfs || 0).padStart(2, '0')}</div>
         <div className="text-sm text-gray-400">Maintenance Mode</div>

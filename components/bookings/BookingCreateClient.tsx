@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/common/Button';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import AlertModal from '@/components/common/AlertModal';
+import { bookingsApi } from '@/lib/api';
 
 interface BookingCreateClientProps {
   turf: any;
@@ -58,34 +59,16 @@ export default function BookingCreateClient({ turf }: BookingCreateClientProps) 
       const endHour = (parseInt(hours) + 1).toString().padStart(2, '0');
       const finalEndTime = `${endHour}:${minutes}`;
 
-      // Create booking with auth token
-      const bookingResponse = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          turf_id: bookingData.turfId,
-          venue_id: bookingData.venueId,
-          booking_date: bookingData.date,
-          start_time: startTime,
-          end_time: finalEndTime,
-          total_amount: bookingData.pricing.total,
-        }),
+      const { booking }: any = await bookingsApi.create({
+        turf_id: bookingData.turfId,
+        venue_id: bookingData.venueId,
+        booking_date: bookingData.date,
+        start_time: startTime,
+        end_time: finalEndTime,
+        total_amount: bookingData.pricing.total,
       });
 
-      if (!bookingResponse.ok) {
-        const error = await bookingResponse.json();
-        throw new Error(error.error || 'Failed to create booking');
-      }
-
-      const { booking } = await bookingResponse.json();
-
-      // Clear session storage
       sessionStorage.removeItem('pendingBooking');
-
-      // Redirect to confirmation page
       router.push(`/bookings/${booking.id}`);
     } catch (error: any) {
       setAlertMessage(error.message || 'Failed to create booking');

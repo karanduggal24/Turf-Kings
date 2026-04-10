@@ -15,7 +15,7 @@ export default function Navbar() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, loading, signOut } = useAuthStore();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, isTurfOwner } = useUserRole();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -106,6 +106,7 @@ export default function Navbar() {
           <UserMenu
             user={user}
             isAdmin={isAdmin}
+            isOwner={isTurfOwner}
             isOpen={isProfileOpen}
             onToggle={() => setIsProfileOpen(!isProfileOpen)}
             onProfileClick={handleProfileClick}
@@ -144,6 +145,7 @@ export default function Navbar() {
         user={user}
         loading={loading}
         isAdmin={isAdmin}
+        isOwner={isTurfOwner}
         onClose={() => setIsMenuOpen(false)}
         onSignOut={handleSignOut}
         onProfileClick={handleProfileClick}

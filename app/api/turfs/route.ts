@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         owner:users!venues_owner_id_fkey(full_name, email),
-        turfs:turfs_new(id, name, sport_type, price_per_hour, is_active),
+        turfs:turfs_new(id, name, sport_type, price_per_hour, is_active, open_time, close_time),
         reviews:reviews_new(rating)
       `, { count: 'exact' })
       .eq('is_active', true)

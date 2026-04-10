@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import UserTableRow from './users/UserTableRow';
 import UserTableFilters from './users/UserTableFilters';
@@ -60,16 +61,12 @@ export default function UsersTable({
         role: roleFilter,
       });
 
-      const response = await fetch(`/api/admin/users?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users || []);
-        setTotalPages(data.pagination.totalPages);
-        setTotal(data.pagination.total);
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    } finally {
+      const data: any = await adminApi.getUsers(Object.fromEntries(params));
+      setUsers(data.users || []);
+      setTotalPages(data.pagination.totalPages);
+      setTotal(data.pagination.total);
+    } catch {}
+    finally {
       setLoading(false);
     }
   }
@@ -79,26 +76,15 @@ export default function UsersTable({
 
     try {
       setUpdatingRole(true);
-      const response = await fetch('/api/admin/users', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: selectedUser.id,
-          role: newRole,
-        }),
-      });
-
-      if (response.ok) {
-        setUsers(users.map(u => 
-          u.id === selectedUser.id ? { ...u, role: newRole as any } : u
-        ));
-        setShowRoleModal(false);
-        setSelectedUser(null);
-        onRefresh();
-      }
-    } catch (error) {
-      console.error('Error updating role:', error);
-    } finally {
+      await adminApi.updateUserRole(selectedUser.id, newRole);
+      setUsers(users.map(u => 
+        u.id === selectedUser.id ? { ...u, role: newRole as any } : u
+      ));
+      setShowRoleModal(false);
+      setSelectedUser(null);
+      onRefresh();
+    } catch {}
+    finally {
       setUpdatingRole(false);
     }
   }

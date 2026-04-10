@@ -4,11 +4,13 @@ import FeaturedSection from '../components/FeaturedSection';
 import PromotionalBanner from '../components/PromotionalBanner';
 import Footer from '../components/Footer';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { homeMetadata } from '@/lib/metadata';
+
+export const metadata = homeMetadata;
 
 export default async function Home() {
   const supabase = await createServerSupabaseClient();
   
-  // Fetch venues with their turfs and reviews
   const { data: venues, error } = await supabase
     .from('venues')
     .select(`
@@ -21,20 +23,16 @@ export default async function Home() {
     .eq('approval_status', 'approved')
     .limit(8);
 
-  // Transform venues to include computed fields
   const transformedVenues = (venues || []).map(venue => {
     const venueTurfs = venue.turfs || [];
     const activeTurfs = venueTurfs.filter((t: any) => t.is_active);
-    
     const availableSports = [...new Set(activeTurfs.map((t: any) => t.sport_type))];
     const prices = activeTurfs.map((t: any) => t.price_per_hour);
     const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
     const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-
-    // Calculate average rating from reviews
     const reviews = venue.reviews || [];
-    const avgRating = reviews.length > 0 
-      ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length 
+    const avgRating = reviews.length > 0
+      ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
       : 0;
 
     return {
@@ -68,10 +66,7 @@ export default async function Home() {
       <Navbar />
       <main className="grow">
         <HeroSection />
-        <FeaturedSection 
-          initialTurfs={transformedVenues} 
-          initialError={error?.message || null}
-        />
+        <FeaturedSection initialTurfs={transformedVenues} initialError={error?.message || null} />
         <PromotionalBanner />
       </main>
       <Footer />

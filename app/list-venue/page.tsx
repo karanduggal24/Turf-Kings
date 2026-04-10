@@ -1,10 +1,7 @@
-import { Metadata } from 'next';
 import ListVenueClient from '@/components/venue/ListVenueClient';
+import { listVenueMetadata } from '@/lib/metadata';
 
-export const metadata: Metadata = {
-  title: 'List Your Venue | TurfKings',
-  description: 'Register your turf venue and start accepting bookings',
-};
+export const metadata = listVenueMetadata;
 
 export default function ListVenuePage() {
   return <ListVenueClient />;

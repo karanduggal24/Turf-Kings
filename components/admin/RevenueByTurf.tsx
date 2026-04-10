@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
 
@@ -21,14 +22,10 @@ export default function RevenueByTurf() {
   async function fetchRevenueByTurf() {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/revenue-by-turf');
-      if (response.ok) {
-        const data = await response.json();
-        setTurfs(data.turfs || []);
-      }
-    } catch (error) {
-      console.error('Error fetching revenue by turf:', error);
-    } finally {
+      const data: any = await adminApi.getRevenueByTurf();
+      setTurfs(data.turfs || []);
+    } catch {}
+    finally {
       setLoading(false);
     }
   }

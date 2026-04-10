@@ -4,14 +4,34 @@ import StoreInitializer from "@/components/StoreInitializer";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "TurfKings - Turf Booking Platform",
-  description: "Premium cricket and football grounds available near you. Experience the thrill under the lights.",
+  title: {
+    default: "TurfKings - Book Premium Sports Turfs",
+    template: "%s | TurfKings",
+  },
+  description: "Book premium cricket, football and badminton turfs near you. Real-time availability, instant confirmation. Experience the thrill under the lights.",
+  keywords: ["turf booking", "cricket ground", "football turf", "badminton court", "sports booking", "turf near me"],
+  authors: [{ name: "TurfKings" }],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  openGraph: {
+    type: "website",
+    siteName: "TurfKings",
+    title: "TurfKings - Book Premium Sports Turfs",
+    description: "Book premium cricket, football and badminton turfs near you. Real-time availability, instant confirmation.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "TurfKings" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TurfKings - Book Premium Sports Turfs",
+    description: "Book premium cricket, football and badminton turfs near you.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
-    icon: [
-      { url: '/Dark-Logo.svg', type: 'image/svg+xml' },
-    ],
-    shortcut: '/Dark-Logo.svg',
-    apple: '/Dark-Logo.svg',
+    icon: [{ url: "/Dark-Logo.svg", type: "image/svg+xml" }],
+    shortcut: "/Dark-Logo.svg",
+    apple: "/Dark-Logo.svg",
   },
 };
 

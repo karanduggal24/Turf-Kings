@@ -10,12 +10,14 @@ import VenueImagesSection from './form/VenueImagesSection';
 import TurfsList from './form/TurfsList';
 import Button from '@/components/common/Button';
 import AlertModal from '@/components/common/AlertModal';
+import { adminApi } from '@/lib/api';
 
 interface VenueFormEditNewProps {
   venue: any;
+  redirectTo?: string;
 }
 
-export default function VenueFormEditNew({ venue }: VenueFormEditNewProps) {
+export default function VenueFormEditNew({ venue, redirectTo = '/admin/venues' }: VenueFormEditNewProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [alertModal, setAlertModal] = useState<{
@@ -66,6 +68,8 @@ export default function VenueFormEditNew({ venue }: VenueFormEditNewProps) {
           name: t.name || '',
           sportType: t.sport_type || 'football',
           pricePerHour: t.price_per_hour ? t.price_per_hour.toString() : '',
+          openTime: t.open_time || '06:00',
+          closeTime: t.close_time || '22:00',
         })));
       }
     }
@@ -111,61 +115,32 @@ export default function VenueFormEditNew({ venue }: VenueFormEditNewProps) {
     setLoading(true);
 
     try {
-      const venueResponse = await fetch(`/api/admin/venues/${venue.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          location: formData.location,
-          city: formData.city,
-          state: formData.state,
-          phone: formData.phone,
-          amenities: formData.amenities,
-          images: formData.images,
-        }),
+      await adminApi.updateVenueById(venue.id, {
+        name: formData.name,
+        description: formData.description,
+        location: formData.location,
+        city: formData.city,
+        state: formData.state,
+        phone: formData.phone,
+        amenities: formData.amenities,
+        images: formData.images,
       });
-
-      if (!venueResponse.ok) {
-        const errorData = await venueResponse.json();
-        throw new Error(errorData.error || 'Failed to update venue');
-      }
 
       const turfsForApi = turfs.map(t => ({
         id: t.id.length > 20 ? t.id : undefined,
         name: t.name,
         sport_type: t.sportType,
         price_per_hour: parseFloat(t.pricePerHour),
+        open_time: t.openTime || '06:00',
+        close_time: t.closeTime || '22:00',
       }));
 
-      const turfsResponse = await fetch(`/api/admin/venues/${venue.id}/turfs`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ turfs: turfsForApi }),
-      });
+      await adminApi.updateVenueTurfs(venue.id, turfsForApi);
 
-      if (!turfsResponse.ok) {
-        const errorData = await turfsResponse.json();
-        throw new Error(errorData.error || 'Failed to update turfs');
-      }
-
-      setAlertModal({
-        isOpen: true,
-        title: 'Success',
-        message: 'Venue updated successfully!',
-        type: 'success'
-      });
-
-      setTimeout(() => {
-        router.push('/admin/venues');
-      }, 1500);
+      setAlertModal({ isOpen: true, title: 'Success', message: 'Venue updated successfully!', type: 'success' });
+      setTimeout(() => router.push(redirectTo), 1500);
     } catch (error: any) {
-      setAlertModal({
-        isOpen: true,
-        title: 'Error',
-        message: error.message || 'Failed to update venue. Please try again.',
-        type: 'error'
-      });
+      setAlertModal({ isOpen: true, title: 'Error', message: error.message || 'Failed to update venue. Please try again.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -245,7 +220,7 @@ export default function VenueFormEditNew({ venue }: VenueFormEditNewProps) {
             <Button
               type="button"
               variant="ghost"
-              onClick={() => router.push('/admin/venues')}
+              onClick={() => router.push(redirectTo)}
               disabled={loading}
             >
               Cancel

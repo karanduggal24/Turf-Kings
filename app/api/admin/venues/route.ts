@@ -98,12 +98,18 @@ export async function PATCH(request: Request) {
       .from('venues')
       .update(updateData)
       .eq('id', id)
-      .select()
+      .select('id, owner_id')
       .single();
 
-    if (error) {
-      console.error('Error updating venue:', error);
-      throw error;
+    if (error) throw error;
+
+    // When a venue is approved, upgrade the owner's role to turf_owner
+    if (approval_status === 'approved' && data?.owner_id) {
+      await supabase
+        .from('users')
+        .update({ role: 'turf_owner' })
+        .eq('id', data.owner_id)
+        .eq('role', 'user'); // only upgrade if still a regular user, never downgrade admin
     }
 
     return NextResponse.json({ venue: data });

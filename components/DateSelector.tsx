@@ -5,21 +5,39 @@ import React, { useState, useRef, useEffect } from 'react';
 interface DateSelectorProps {
   value?: Date;
   onChange?: (date: Date) => void;
+  /** Alternative: work with YYYY-MM-DD strings directly */
+  valueStr?: string;
+  onChangeStr?: (dateStr: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  /** Minimum selectable date as YYYY-MM-DD. Defaults to today. */
+  minDate?: string;
 }
 
 const DateSelector: React.FC<DateSelectorProps> = ({
   value,
   onChange,
+  valueStr,
+  onChangeStr,
   placeholder = "Select Date",
   className = "",
-  disabled = false
+  disabled = false,
+  minDate,
 }) => {
+  // Resolve initial date from either prop
+  const resolveInitial = () => {
+    if (value) return value;
+    if (valueStr) {
+      const [y, m, d] = valueStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return null;
+  };
+
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(value || null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(resolveInitial);
+  const [currentMonth, setCurrentMonth] = useState(resolveInitial() || new Date());
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const months = [
@@ -86,6 +104,11 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
     onChange?.(date);
+    // Also fire string callback
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    onChangeStr?.(`${y}-${m}-${d}`);
     setIsOpen(false);
   };
 
@@ -108,9 +131,10 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   };
 
   const isPastDate = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return date < today;
+    const min = minDate
+      ? (() => { const [y, m, d] = minDate.split('-').map(Number); return new Date(y, m - 1, d); })()
+      : (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })();
+    return date < min;
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {

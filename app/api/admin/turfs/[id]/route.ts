@@ -19,7 +19,7 @@ export async function GET(
       .select(`
         *,
         owner:users!venues_owner_id_fkey(full_name, email, phone),
-        turfs:turfs_new(id, name, sport_type, price_per_hour, is_active)
+        turfs:turfs_new(id, name, sport_type, price_per_hour, is_active, open_time, close_time)
       `)
       .eq('id', id)
       .single();

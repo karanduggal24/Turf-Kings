@@ -71,8 +71,17 @@ A modern, full-stack turf booking platform built with Next.js 15, TypeScript, Su
 │   └── verify-security.js  # Security verification
 ├── supabase/
 │   └── schema.sql          # Database schema
+├── docs/                    # 📚 All project documentation
+│   ├── README.md           # Documentation index
+│   ├── REFACTORING_*.md    # Refactoring documentation
+│   ├── MIGRATION_*.md      # Database migration docs
+│   ├── API_*.md            # API documentation
+│   ├── SECURITY_*.md       # Security guides
+│   └── ...                 # 42 total documentation files
 └── .env.local.example      # Environment template
 ```
+
+> 📚 **Documentation**: All project documentation is organized in the [`docs/`](./docs/) folder. See [`docs/README.md`](./docs/README.md) for a complete index.
 
 ---
 
@@ -111,7 +120,10 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 #### **Run Database Schema**
 1. Go to Supabase Dashboard → SQL Editor
 2. Copy and paste contents of `supabase/schema.sql`
-3. Click "Run" to create tables and policies
+3. Click "Run" to create all tables, indexes, and policies
+4. Verify tables are created successfully
+
+> 📚 **Note**: See [`supabase/README.md`](./supabase/README.md) for detailed schema documentation and verification steps.
 
 #### **Configure Authentication**
 1. Go to Authentication → Settings

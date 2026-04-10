@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import Button from '@/components/common/Button';
 import AlertModal from '@/components/common/AlertModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -66,15 +67,10 @@ export default function RejectedVenuesTable({ searchQuery }: RejectedVenuesTable
   async function fetchRejectedVenues() {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/rejected-venues');
-      
-      if (response.ok) {
-        const data = await response.json();
-        setVenues(data.venues || []);
-      }
-    } catch (error) {
-      console.error('Error fetching rejected venues:', error);
-    } finally {
+      const data: any = await adminApi.getRejectedVenues();
+      setVenues(data.venues || []);
+    } catch {}
+    finally {
       setLoading(false);
     }
   }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import Button from '@/components/common/Button';
 import AlertModal from '@/components/common/AlertModal';
 import VenueTableBase from './venues/VenueTableBase';
@@ -54,15 +55,10 @@ export default function PendingVenuesTable({ searchQuery }: PendingVenuesTablePr
   async function fetchPendingVenues() {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/pending-venues');
-      
-      if (response.ok) {
-        const data = await response.json();
-        setVenues(data.venues || []);
-      }
-    } catch (error) {
-      console.error('Error fetching pending venues:', error);
-    } finally {
+      const data: any = await adminApi.getPendingVenues();
+      setVenues(data.venues || []);
+    } catch {}
+    finally {
       setLoading(false);
     }
   }

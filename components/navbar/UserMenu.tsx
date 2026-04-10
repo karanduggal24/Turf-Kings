@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js';
 interface UserMenuProps {
   user: User;
   isAdmin: boolean;
+  isOwner: boolean;
   isOpen: boolean;
   onToggle: () => void;
   onProfileClick: () => void;
@@ -16,6 +17,7 @@ interface UserMenuProps {
 export default function UserMenu({
   user,
   isAdmin,
+  isOwner,
   isOpen,
   onToggle,
   onProfileClick,
@@ -61,13 +63,15 @@ export default function UserMenu({
               <span className="font-medium">My Profile</span>
             </button>
             {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={onClose}
-                className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-surface-highlight transition-all duration-200 text-sm"
-              >
+              <Link href="/admin" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-surface-highlight transition-all duration-200 text-sm">
                 <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
                 <span className="font-medium">Admin Dashboard</span>
+              </Link>
+            )}
+            {isOwner && !isAdmin && (
+              <Link href="/owner" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-surface-highlight transition-all duration-200 text-sm">
+                <span className="material-symbols-outlined text-xl">storefront</span>
+                <span className="font-medium">Owner Dashboard</span>
               </Link>
             )}
             <button

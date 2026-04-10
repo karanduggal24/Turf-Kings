@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
 
@@ -25,14 +26,10 @@ export default function RecentTransactions() {
   async function fetchTransactions() {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/recent-transactions');
-      if (response.ok) {
-        const data = await response.json();
-        setTransactions(data.transactions || []);
-      }
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    } finally {
+      const data: any = await adminApi.getRecentTransactions();
+      setTransactions(data.transactions || []);
+    } catch {}
+    finally {
       setLoading(false);
     }
   }

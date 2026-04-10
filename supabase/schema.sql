@@ -57,6 +57,8 @@ CREATE TABLE turfs_new (
   name TEXT NOT NULL,
   sport_type sport_type NOT NULL,
   price_per_hour DECIMAL(10,2) NOT NULL,
+  open_time TIME DEFAULT '06:00' NOT NULL,
+  close_time TIME DEFAULT '22:00' NOT NULL,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -81,6 +83,25 @@ CREATE TABLE bookings_new (
   
   -- Ensure no overlapping bookings for same turf
   CONSTRAINT no_overlapping_bookings_new UNIQUE (turf_id, booking_date, start_time, end_time)
+);
+
+-- Turf blocks (owner-managed blocked slots and manual/walk-in bookings)
+CREATE TYPE block_type AS ENUM ('blocked', 'manual_booking');
+
+CREATE TABLE turf_blocks (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  turf_id UUID REFERENCES turfs_new(id) ON DELETE CASCADE NOT NULL,
+  venue_id UUID REFERENCES venues(id) ON DELETE CASCADE NOT NULL,
+  block_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  block_type block_type DEFAULT 'blocked' NOT NULL,
+  customer_name TEXT,
+  customer_phone TEXT,
+  notes TEXT,
+  created_by UUID REFERENCES users(id) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  CONSTRAINT no_overlapping_blocks UNIQUE (turf_id, block_date, start_time, end_time)
 );
 
 -- Reviews table (at venue level)
@@ -116,6 +137,11 @@ CREATE INDEX idx_turfs_new_venue_id ON turfs_new(venue_id);
 CREATE INDEX idx_turfs_new_sport_type ON turfs_new(sport_type);
 CREATE INDEX idx_turfs_new_is_active ON turfs_new(is_active);
 
+-- Turf blocks indexes
+CREATE INDEX idx_turf_blocks_turf_id ON turf_blocks(turf_id);
+CREATE INDEX idx_turf_blocks_date ON turf_blocks(block_date);
+CREATE INDEX idx_turf_blocks_venue_id ON turf_blocks(venue_id);
+
 -- Bookings indexes
 CREATE INDEX idx_bookings_new_user_id ON bookings_new(user_id);
 CREATE INDEX idx_bookings_new_turf_id ON bookings_new(turf_id);
@@ -134,6 +160,7 @@ CREATE INDEX idx_reviews_new_user_id ON reviews_new(user_id);
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE venues ENABLE ROW LEVEL SECURITY;
 ALTER TABLE turfs_new ENABLE ROW LEVEL SECURITY;
+ALTER TABLE turf_blocks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings_new ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews_new ENABLE ROW LEVEL SECURITY;
 
@@ -177,6 +204,19 @@ CREATE POLICY "Venue owners can manage their turfs" ON turfs_new
     EXISTS (
       SELECT 1 FROM venues 
       WHERE venues.id = turfs_new.venue_id 
+      AND venues.owner_id = auth.uid()
+    )
+  );
+
+-- Turf blocks policies
+CREATE POLICY "Anyone can read turf blocks" ON turf_blocks
+  FOR SELECT USING (true);
+
+CREATE POLICY "Owners can manage their turf blocks" ON turf_blocks
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM venues
+      WHERE venues.id = turf_blocks.venue_id
       AND venues.owner_id = auth.uid()
     )
   );

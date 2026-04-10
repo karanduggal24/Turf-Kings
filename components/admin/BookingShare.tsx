@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
@@ -36,11 +37,8 @@ export default function BookingShare() {
   useEffect(() => {
     async function fetchBookingShare() {
       try {
-        const response = await fetch('/api/admin/booking-share');
-        if (response.ok) {
-          const result = await response.json();
-          setData(result);
-        }
+        const data: any = await adminApi.getBookingShare();
+        setData(data);
       } finally {
         setLoading(false);
       }

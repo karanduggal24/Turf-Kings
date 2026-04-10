@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import AlertModal from '@/components/common/AlertModal';
@@ -63,42 +64,20 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
   async function fetchTurfs() {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/admin/venues?page=${page}&limit=6&search=${encodeURIComponent(debouncedSearchQuery)}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setTurfs(data.turfs);
-        setTotalPages(data.pagination.totalPages);
-        setTotal(data.pagination.total);
-      }
-    } catch (error) {
-      console.error('Error fetching turfs:', error);
-    } finally {
-      setLoading(false);
-    }
+      const data: any = await adminApi.getVenues({ page, limit: 6, search: debouncedSearchQuery });
+      setTurfs(data.turfs);
+      setTotalPages(data.pagination.totalPages);
+      setTotal(data.pagination.total);
+    } catch {}
+    finally { setLoading(false); }
   }
 
   async function toggleMaintenance(turfId: string, currentStatus: boolean) {
     try {
-      const response = await fetch('/api/admin/venues', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: turfId,
-          is_active: !currentStatus,
-        }),
-      });
-
-      if (response.ok) {
-        setTurfs(turfs.map(turf => 
-          turf.id === turfId ? { ...turf, is_active: !currentStatus } : turf
-        ));
-        onStatsChange();
-      }
-    } catch (error) {
-      console.error('Error toggling maintenance:', error);
-    }
+      await adminApi.updateVenue(turfId, { is_active: !currentStatus });
+      setTurfs(turfs.map(t => t.id === turfId ? { ...t, is_active: !currentStatus } : t));
+      onStatsChange();
+    } catch {}
   }
 
   const handleDeleteClick = (turf: Turf) => {
@@ -108,43 +87,16 @@ export default function VenuesGrid({ searchQuery, onStatsChange }: VenuesGridPro
 
   const handleDeleteConfirm = async () => {
     if (!venueToDelete) return;
-
     setIsDeleting(true);
     try {
-      const response = await fetch('/api/admin/venues', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: venueToDelete.id }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setTurfs(turfs.filter(turf => turf.id !== venueToDelete.id));
-        setDeleteModalOpen(false);
-        setVenueToDelete(null);
-        onStatsChange();
-        setAlertModal({
-          isOpen: true,
-          title: 'Venue Deleted',
-          message: 'The venue has been successfully deleted.',
-          type: 'success'
-        });
-      } else {
-        setAlertModal({
-          isOpen: true,
-          title: 'Deletion Failed',
-          message: data.error || 'Failed to delete venue. Please try again.',
-          type: 'error'
-        });
-      }
+      await adminApi.deleteVenue(venueToDelete.id);
+      setTurfs(turfs.filter(t => t.id !== venueToDelete.id));
+      setDeleteModalOpen(false);
+      setVenueToDelete(null);
+      onStatsChange();
+      setAlertModal({ isOpen: true, title: 'Venue Deleted', message: 'The venue has been successfully deleted.', type: 'success' });
     } catch (error: any) {
-      setAlertModal({
-        isOpen: true,
-        title: 'Error',
-        message: error.message || 'Network error occurred. Please try again.',
-        type: 'error'
-      });
+      setAlertModal({ isOpen: true, title: 'Deletion Failed', message: error.message || 'Failed to delete venue.', type: 'error' });
     } finally {
       setIsDeleting(false);
     }

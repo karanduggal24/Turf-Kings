@@ -28,10 +28,10 @@ export default function Button({
   const baseClasses = 'font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantClasses = {
-    primary: 'bg-primary hover:bg-primary/90 text-black',
-    secondary: 'bg-white/10 hover:bg-white/20 text-white border border-white/20',
-    danger: 'bg-red-500 hover:bg-red-600 text-white',
-    ghost: 'bg-transparent hover:bg-white/5 text-white',
+    primary: 'bg-primary hover:bg-primary/90 text-black cursor-pointer',
+    secondary: 'bg-white/10 hover:bg-white/20 text-white border border-white/20 cursor-pointer',
+    danger: 'bg-red-500 hover:bg-red-600 text-white cursor-pointer',
+    ghost: 'bg-transparent hover:bg-white/5 text-white cursor-pointer',
   };
 
   const sizeClasses = {

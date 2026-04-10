@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { filtersApi } from '@/lib/api';
 
 interface SportOption {
   value: string;
@@ -21,19 +22,11 @@ export default function VenueSportSelector({ selectedSport, onSportChange }: Ven
   useEffect(() => {
     const fetchSportsTypes = async () => {
       try {
-        const response = await fetch('/api/sports-types');
-        const data = await response.json();
-        
-        if (data.allSports) {
-          setSports(data.allSports);
-        }
-      } catch (error) {
-        console.error('Error fetching sports types:', error);
-      } finally {
-        setLoading(false);
-      }
+        const data: any = await filtersApi.getSportsTypes();
+        if (data.allSports) setSports(data.allSports);
+      } catch {}
+      finally { setLoading(false); }
     };
-
     fetchSportsTypes();
   }, []);
 

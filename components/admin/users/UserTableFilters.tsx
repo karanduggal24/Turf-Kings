@@ -1,11 +1,20 @@
 'use client';
 
+import Dropdown from '@/components/common/Dropdown';
+
 interface UserTableFiltersProps {
   searchQuery: string;
   roleFilter: string;
   onSearchChange: (query: string) => void;
   onRoleFilterChange: (role: string) => void;
 }
+
+const roleOptions = [
+  { value: 'all', label: 'All Roles' },
+  { value: 'user', label: 'Player' },
+  { value: 'turf_owner', label: 'Turf Owner' },
+  { value: 'admin', label: 'Admin' },
+];
 
 export default function UserTableFilters({
   searchQuery,
@@ -27,18 +36,12 @@ export default function UserTableFilters({
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <div className="flex items-center gap-3 w-full md:w-auto">
-        <select
-          className="bg-black border border-primary/20 rounded-lg px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-primary text-white w-full md:w-auto"
-          value={roleFilter}
-          onChange={(e) => onRoleFilterChange(e.target.value)}
-        >
-          <option value="all">All Roles</option>
-          <option value="user">Player</option>
-          <option value="turf_owner">Turf Owner</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
+      <Dropdown
+        options={roleOptions}
+        value={roleFilter}
+        onChange={onRoleFilterChange}
+        className="w-full md:w-auto"
+      />
     </div>
   );
 }

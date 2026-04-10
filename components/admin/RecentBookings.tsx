@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { adminApi } from '@/lib/api';
 
 interface PendingTurf {
   id: string;
@@ -10,10 +11,7 @@ interface PendingTurf {
   images: string[];
   sport_type: string;
   created_at: string;
-  owner: {
-    full_name: string;
-    email: string;
-  };
+  owner: { full_name: string; email: string };
 }
 
 export default function RecentBookings() {
@@ -26,26 +24,24 @@ export default function RecentBookings() {
 
   const fetchPendingTurfs = async () => {
     try {
-      const response = await fetch('/api/admin/pending-turfs');
-      const data = await response.json();
-      if (data.turfs) {
-        setPendingTurfs(data.turfs);
-      }
-    } catch (error) {
-      // Handle error
-    } finally {
-      setLoading(false);
-    }
+      const data: any = await adminApi.getPendingVenues();
+      if (data.venues) setPendingTurfs(data.venues);
+    } catch {}
+    finally { setLoading(false); }
   };
 
   const handleApprove = async (id: string) => {
-    // TODO: Implement approve logic
-    alert(`Approve turf ${id}`);
+    try {
+      await adminApi.updateVenue(id, { is_active: true, approval_status: 'approved' });
+      setPendingTurfs(pendingTurfs.filter(t => t.id !== id));
+    } catch {}
   };
 
   const handleReject = async (id: string) => {
-    // TODO: Implement reject logic
-    alert(`Reject turf ${id}`);
+    try {
+      await adminApi.updateVenue(id, { is_active: false, approval_status: 'rejected' });
+      setPendingTurfs(pendingTurfs.filter(t => t.id !== id));
+    } catch {}
   };
 
   const getSportIcon = (sport: string) => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface ChartData {
@@ -23,11 +24,8 @@ export default function RevenueChart({ period }: RevenueChartProps) {
   async function fetchChartData() {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/revenue-chart?period=${period}`);
-      if (response.ok) {
-        const result = await response.json();
-        setData(result.data || []);
-      }
+      const data: any = await adminApi.getRevenueChart(period);
+      setData(data.data || []);
     } finally {
       setLoading(false);
     }

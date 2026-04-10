@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { adminApi } from '@/lib/api';
 
 interface AlertState {
   isOpen: boolean;
@@ -27,27 +28,11 @@ export function useVenueActions() {
   const approveVenue = async (venueId: string): Promise<boolean> => {
     try {
       setActionLoading(true);
-      const response = await fetch('/api/admin/venues', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: venueId,
-          is_active: true,
-          approval_status: 'approved',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        showAlert('Approval Failed', data.error || 'Failed to approve venue. Please try again.', 'error');
-        return false;
-      }
-
+      await adminApi.updateVenue(venueId, { is_active: true, approval_status: 'approved' });
       showAlert('Venue Approved', 'The venue has been successfully approved and is now active.', 'success');
       return true;
-    } catch (error) {
-      showAlert('Error', 'An unexpected error occurred. Please try again.', 'error');
+    } catch (error: any) {
+      showAlert('Approval Failed', error.message || 'Failed to approve venue. Please try again.', 'error');
       return false;
     } finally {
       setActionLoading(false);
@@ -57,27 +42,11 @@ export function useVenueActions() {
   const rejectVenue = async (venueId: string): Promise<boolean> => {
     try {
       setActionLoading(true);
-      const response = await fetch('/api/admin/venues', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: venueId,
-          is_active: false,
-          approval_status: 'rejected',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        showAlert('Rejection Failed', data.error || 'Failed to reject venue. Please try again.', 'error');
-        return false;
-      }
-
+      await adminApi.updateVenue(venueId, { is_active: false, approval_status: 'rejected' });
       showAlert('Venue Rejected', 'The venue has been rejected.', 'warning');
       return true;
-    } catch (error) {
-      showAlert('Error', 'An unexpected error occurred. Please try again.', 'error');
+    } catch (error: any) {
+      showAlert('Rejection Failed', error.message || 'Failed to reject venue. Please try again.', 'error');
       return false;
     } finally {
       setActionLoading(false);
@@ -87,23 +56,11 @@ export function useVenueActions() {
   const deleteVenue = async (venueId: string): Promise<boolean> => {
     try {
       setActionLoading(true);
-      const response = await fetch('/api/admin/venues', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: venueId }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        showAlert('Deletion Failed', data.error || 'Failed to delete venue. Please try again.', 'error');
-        return false;
-      }
-
+      await adminApi.deleteVenue(venueId);
       showAlert('Venue Deleted', 'The venue has been permanently deleted.', 'success');
       return true;
-    } catch (error) {
-      showAlert('Error', 'An unexpected error occurred. Please try again.', 'error');
+    } catch (error: any) {
+      showAlert('Deletion Failed', error.message || 'Failed to delete venue. Please try again.', 'error');
       return false;
     } finally {
       setActionLoading(false);

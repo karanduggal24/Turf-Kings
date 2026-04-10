@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 import Button from '@/components/common/Button';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { filtersApi } from '@/lib/api';
 
 interface TurfData {
   id: string;
   name: string;
   sportType: string;
   pricePerHour: string;
+  openTime?: string;
+  closeTime?: string;
 }
 
 interface TurfsListProps {
@@ -44,17 +47,10 @@ export default function TurfsList({
   useEffect(() => {
     const fetchSportsTypes = async () => {
       try {
-        const response = await fetch('/api/sports-types');
-        const data = await response.json();
-        
-        if (data.allSports && data.allSports.length > 0) {
-          setSportsOptions(data.allSports);
-        }
-      } catch (error) {
-        console.error('Error fetching sports types:', error);
-      }
+        const data: any = await filtersApi.getSportsTypes();
+        if (data.allSports && data.allSports.length > 0) setSportsOptions(data.allSports);
+      } catch {}
     };
-
     fetchSportsTypes();
   }, []);
 
@@ -176,6 +172,34 @@ export default function TurfsList({
               {errors[`turf_${index}_price`] && (
                 <p className="text-red-500 text-xs mt-1">{errors[`turf_${index}_price`]}</p>
               )}
+            </div>
+
+            {/* Operating Hours */}
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-gray-200">
+                Operating Hours
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Opens at</label>
+                  <input
+                    type="time"
+                    value={turf.openTime || '06:00'}
+                    onChange={(e) => onUpdateTurf(turf.id, 'openTime', e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-black/40 border border-primary/20 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Last slot starts at</label>
+                  <input
+                    type="time"
+                    value={turf.closeTime || '22:00'}
+                    onChange={(e) => onUpdateTurf(turf.id, 'closeTime', e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-black/40 border border-primary/20 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-white"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">Customers can only book slots within these hours</p>
             </div>
           </div>
         ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { uploadApi } from '@/lib/api';
 
 interface ImageUploadProps {
   images: string[];
@@ -13,20 +14,7 @@ export default function ImageUpload({ images, onImagesChange }: ImageUploadProps
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadToCloudinary = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to upload image');
-    }
-
-    const data = await response.json();
+    const data = await uploadApi.uploadImage(file);
     return data.url;
   };
 

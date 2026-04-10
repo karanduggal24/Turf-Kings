@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface StatsData {
@@ -20,14 +21,10 @@ export default function UsersStats() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch('/api/admin/users-stats');
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
+        const data: any = await adminApi.getUsersStats();
+        setStats(data);
+      } catch {}
+      finally {
         setLoading(false);
       }
     }

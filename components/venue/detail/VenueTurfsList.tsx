@@ -6,17 +6,28 @@ import TurfCardHeader from './booking/TurfCardHeader';
 import DateSelector from './booking/DateSelector';
 import TimeSlotGrid from './booking/TimeSlotGrid';
 import BookingSummary from './booking/BookingSummary';
+import { turfsApi } from '@/lib/api';
 
 interface VenueTurfsListProps {
   turfs: any[];
   venueId: string;
 }
 
-const TIME_SLOTS = [
+const ALL_TIME_SLOTS = [
   '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
   '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-  '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+  '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
 ];
+
+// Generate slots within turf's operating hours
+function getTurfSlots(turf: any): string[] {
+  const openHour = parseInt((turf.open_time || '06:00').split(':')[0]);
+  const closeHour = parseInt((turf.close_time || '22:00').split(':')[0]);
+  return ALL_TIME_SLOTS.filter(slot => {
+    const h = parseInt(slot.split(':')[0]);
+    return h >= openHour && h <= closeHour;
+  });
+}
 
 export default function VenueTurfsList({ turfs, venueId }: VenueTurfsListProps) {
   const router = useRouter();
@@ -37,20 +48,19 @@ export default function VenueTurfsList({ turfs, venueId }: VenueTurfsListProps) 
   const fetchAvailability = async (turfId: string, date: string) => {
     setLoadingAvailability(true);
     try {
-      const response = await fetch(`/api/turfs/${turfId}/availability?date=${date}`);
-      const data = await response.json();
+      const data: any = await turfsApi.getAvailability(turfId, date);
       setBookedSlots(data.bookedSlots || []);
-    } catch (error) {
+    } catch {
       setBookedSlots([]);
     } finally {
       setLoadingAvailability(false);
     }
   };
 
-  const areSlotsConsecutive = (slots: string[]): boolean => {
+  const areSlotsConsecutive = (slots: string[], turfSlots: string[]): boolean => {
     if (slots.length <= 1) return true;
     const indices = slots
-      .map(slot => TIME_SLOTS.findIndex(ts => ts === slot))
+      .map(slot => turfSlots.findIndex((ts: string) => ts === slot))
       .sort((a, b) => a - b);
     for (let i = 1; i < indices.length; i++) {
       if (indices[i] !== indices[i - 1] + 1) return false;
@@ -58,13 +68,14 @@ export default function VenueTurfsList({ turfs, venueId }: VenueTurfsListProps) 
     return true;
   };
 
-  const toggleTimeSlot = (time: string) => {
+  const toggleTimeSlot = (time: string, turf: any) => {
+    const turfSlots = getTurfSlots(turf);
     setSelectedTimeSlots(prev => {
       const newSelection = prev.includes(time)
         ? prev.filter(t => t !== time)
         : [...prev, time];
 
-      if (newSelection.length > 1 && !areSlotsConsecutive(newSelection)) {
+      if (newSelection.length > 1 && !areSlotsConsecutive(newSelection, turfSlots)) {
         setShowConsecutiveWarning(true);
         setTimeout(() => setShowConsecutiveWarning(false), 3000);
         return prev;
@@ -153,13 +164,13 @@ export default function VenueTurfsList({ turfs, venueId }: VenueTurfsListProps) 
                 />
 
                 <TimeSlotGrid
-                  timeSlots={TIME_SLOTS}
+                  timeSlots={getTurfSlots(turf)}
                   selectedSlots={selectedTimeSlots}
                   bookedSlots={bookedSlots}
                   selectedDate={selectedDate}
                   loading={loadingAvailability}
                   showWarning={showConsecutiveWarning}
-                  onSlotToggle={toggleTimeSlot}
+                  onSlotToggle={(time) => toggleTimeSlot(time, turf)}
                 />
 
                 <BookingSummary

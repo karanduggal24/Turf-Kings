@@ -56,6 +56,8 @@ export async function POST(request: NextRequest) {
       name: turf.name,
       sport_type: turf.sport_type,
       price_per_hour: turf.price_per_hour,
+      open_time: turf.open_time || '06:00',
+      close_time: turf.close_time || '22:00',
       is_active: true
     }));
 

@@ -5,6 +5,7 @@ import type { FilterState } from './TurfsPageClient';
 import Button from '@/components/common/Button';
 import Checkbox from '@/components/common/Checkbox';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { filtersApi } from '@/lib/api';
 
 interface TurfsFiltersProps {
   filters: FilterState;
@@ -33,32 +34,18 @@ export default function TurfsFilters({ filters, setFilters, isMobile }: TurfsFil
   useEffect(() => {
     const fetchSportsTypes = async () => {
       try {
-        const response = await fetch('/api/sports-types');
-        const data = await response.json();
-        
-        if (data.sports) {
-          setSportsOptions(data.sports);
-        }
-      } catch (error) {
-        // Error fetching sports types
-      } finally {
-        setLoadingSports(false);
-      }
+        const data: any = await filtersApi.getSportsTypes();
+        if (data.sports) setSportsOptions(data.sports);
+      } catch {}
+      finally { setLoadingSports(false); }
     };
 
     const fetchAmenities = async () => {
       try {
-        const response = await fetch('/api/amenities');
-        const data = await response.json();
-        
-        if (data.amenities) {
-          setAmenitiesOptions(data.amenities);
-        }
-      } catch (error) {
-        // Error fetching amenities
-      } finally {
-        setLoadingAmenities(false);
-      }
+        const data: any = await filtersApi.getAmenities();
+        if (data.amenities) setAmenitiesOptions(data.amenities);
+      } catch {}
+      finally { setLoadingAmenities(false); }
     };
 
     fetchSportsTypes();

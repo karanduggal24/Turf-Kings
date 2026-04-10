@@ -1,14 +1,10 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { 
-  Turf, 
-  TurfParams, 
-  Pagination, 
-  TurfsState, 
-  DEFAULT_PAGINATION, 
-  DEFAULT_TURF_FILTERS, 
-  TURF_STORE_CONFIG 
+  Turf, TurfParams, Pagination, TurfsState, 
+  DEFAULT_PAGINATION, DEFAULT_TURF_FILTERS, TURF_STORE_CONFIG 
 } from '@/app/constants/turf-types'
+import { turfsApi } from '@/lib/api'
 
 export const useTurfsStore = create<TurfsState>()(
   devtools(
@@ -37,30 +33,10 @@ export const useTurfsStore = create<TurfsState>()(
       fetchTurfs: async (params?: TurfParams) => {
         const state = get()
         const queryParams = { ...state.filters, ...params }
-        
         set({ loading: true, error: null }, false, 'fetchTurfs/start')
-
         try {
-          // Build query string
-          const searchParams = new URLSearchParams()
-          Object.entries(queryParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-              searchParams.append(key, value.toString())
-            }
-          })
-
-          const response = await fetch(`/api/turfs?${searchParams.toString()}`)
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-
-          const data = await response.json()
-
-          if (data.error) {
-            throw new Error(data.error)
-          }
-
+          const data: any = await turfsApi.getAll(queryParams)
+          if (data.error) throw new Error(data.error)
           set({
             turfs: data.turfs || [],
             pagination: data.pagination || DEFAULT_PAGINATION,
@@ -68,47 +44,24 @@ export const useTurfsStore = create<TurfsState>()(
             loading: false,
             error: null
           }, false, 'fetchTurfs/success')
-
-          // Return data for component use
           return data.turfs || []
-
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to fetch turfs'
-          set({
-            error: errorMessage,
-            loading: false,
-            turfs: []
-          }, false, 'fetchTurfs/error')
-          
+          set({ error: errorMessage, loading: false, turfs: [] }, false, 'fetchTurfs/error')
           return []
         }
       },
 
       fetchTurfById: async (id: string) => {
         set({ loading: true, error: null }, false, 'fetchTurfById/start')
-
         try {
-          const response = await fetch(`/api/turfs/${id}`)
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-
-          const data = await response.json()
-
-          if (data.error) {
-            throw new Error(data.error)
-          }
-
+          const data: any = await turfsApi.getById(id)
+          if (data.error) throw new Error(data.error)
           set({ loading: false, error: null }, false, 'fetchTurfById/success')
           return data.turf
-
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to fetch turf'
-          set({
-            error: errorMessage,
-            loading: false
-          }, false, 'fetchTurfById/error')
+          set({ error: errorMessage, loading: false }, false, 'fetchTurfById/error')
           return null
         }
       },

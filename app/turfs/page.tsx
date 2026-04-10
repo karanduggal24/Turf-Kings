@@ -2,6 +2,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import TurfsPageClient from '@/components/turfs/TurfsPageClient';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { turfsMetadata } from '@/lib/metadata';
+
+export const metadata = turfsMetadata;
 
 export default async function TurfsPage() {
   const supabase = await createServerSupabaseClient();

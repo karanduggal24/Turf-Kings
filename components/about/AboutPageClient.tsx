@@ -3,6 +3,7 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function AboutPageClient() {
   return (
@@ -12,12 +13,16 @@ export default function AboutPageClient() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative w-full" style={{ height: 'calc(100vh - 80px)', minHeight: '600px' }}>
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: "url('https://res.cloudinary.com/dsnewvfyp/image/upload/v1775629031/photo-1459865264687-595d652de67e_nxn0hs.jpg')",
-            }}
-          >
+          <div className="absolute inset-0">
+            <Image
+              src="https://res.cloudinary.com/dsnewvfyp/image/upload/v1775629031/photo-1459865264687-595d652de67e_nxn0hs.jpg"
+              alt="Sports turf background"
+              fill
+              priority
+              quality={75}
+              sizes="100vw"
+              className="object-cover object-center"
+            />
             <div className="absolute inset-0 bg-gradient-to-b from-background-dark/60 via-background-dark/80 to-background-dark" />
           </div>
 
@@ -103,10 +108,13 @@ export default function AboutPageClient() {
                 <div className="relative mb-6">
                   <div className="absolute -inset-2 rounded-full bg-primary/20 opacity-0 transition-opacity group-hover:opacity-100" />
                   <div className="h-48 w-48 overflow-hidden rounded-full border-4 border-transparent group-hover:border-primary transition-all duration-300">
-                    <img
-                      className="h-full w-full object-cover"
+                    <Image
                       src="/MyImage.jpg"
                       alt="Karan Duggal"
+                      width={192}
+                      height={192}
+                      className="h-full w-full object-cover"
+                      priority
                     />
                   </div>
                   <div className="absolute bottom-0 right-0 rounded-full bg-primary p-2 text-background-dark shadow-lg">

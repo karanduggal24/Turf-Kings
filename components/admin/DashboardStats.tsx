@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { adminApi } from '@/lib/api';
 
 interface Stats {
   monthlyRevenue: number;
@@ -33,18 +34,10 @@ export default function DashboardStats() {
 
   const fetchStats = async () => {
     try {
-      const { fetchAdminAPI } = await import('@/lib/admin-api');
-      const response = await fetchAdminAPI('/api/admin/stats');
-      const data = await response.json();
-      
-      if (data.stats) {
-        setStats(data.stats);
-      }
-    } catch (error) {
-      // Silent fail
-    } finally {
-      setLoading(false);
-    }
+      const data: any = await adminApi.getStats();
+      if (data.stats) setStats(data.stats);
+    } catch {}
+    finally { setLoading(false); }
   };
 
   const statCards = [

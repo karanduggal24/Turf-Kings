@@ -80,10 +80,6 @@ export const formatTime = (timeStr: string): string => {
   return `${displayHour}:${minutes} ${ampm}`;
 };
 
-export const generateQRCode = (bookingId: string): string => {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${bookingId}`;
-};
-
 export const calculatePaymentBreakdown = (totalAmount: number) => {
   const serviceTax = totalAmount * 0.05;
   const bookingFee = 50;

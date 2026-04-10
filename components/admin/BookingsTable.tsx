@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminApi } from '@/lib/api';
 import { Booking } from '@/app/constants/booking-types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -42,16 +43,12 @@ export default function BookingsTable() {
   async function fetchBookings() {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/bookings?page=${page}&limit=10`);
-      if (response.ok) {
-        const data = await response.json();
-        setBookings(data.bookings);
-        setTotalPages(data.pagination.totalPages);
-        setTotal(data.pagination.total);
-      }
-    } catch (error) {
-      console.error('Error fetching bookings:', error);
-    } finally {
+      const data: any = await adminApi.getBookings(page);
+      setBookings(data.bookings);
+      setTotalPages(data.pagination.totalPages);
+      setTotal(data.pagination.total);
+    } catch {}
+    finally {
       setLoading(false);
     }
   }
@@ -69,22 +66,11 @@ export default function BookingsTable() {
     if (!selectedBooking) return;
 
     try {
-      const response = await fetch(`/api/admin/bookings/${selectedBooking.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'cancelled' }),
-      });
-
-      if (response.ok) {
-        setAlertTitle('Success');
-        setAlertMessage('Booking cancelled successfully');
-        setShowAlertModal(true);
-        fetchBookings();
-      } else {
-        setAlertTitle('Error');
-        setAlertMessage('Failed to cancel booking');
-        setShowAlertModal(true);
-      }
+      await adminApi.updateBooking(selectedBooking.id, { status: 'cancelled' });
+      setAlertTitle('Success');
+      setAlertMessage('Booking cancelled successfully');
+      setShowAlertModal(true);
+      fetchBookings();
     } catch (error) {
       setAlertTitle('Error');
       setAlertMessage('Failed to cancel booking');
@@ -106,22 +92,11 @@ export default function BookingsTable() {
     const newStatus = selectedBooking.status === 'paid' ? 'pending' : 'paid';
 
     try {
-      const response = await fetch(`/api/admin/bookings/${selectedBooking.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payment_status: newStatus }),
-      });
-
-      if (response.ok) {
-        setAlertTitle('Success');
-        setAlertMessage('Payment status updated successfully');
-        setShowAlertModal(true);
-        fetchBookings();
-      } else {
-        setAlertTitle('Error');
-        setAlertMessage('Failed to update payment status');
-        setShowAlertModal(true);
-      }
+      await adminApi.updateBooking(selectedBooking.id, { payment_status: newStatus });
+      setAlertTitle('Success');
+      setAlertMessage('Payment status updated successfully');
+      setShowAlertModal(true);
+      fetchBookings();
     } catch (error) {
       setAlertTitle('Error');
       setAlertMessage('Failed to update payment status');

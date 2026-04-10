@@ -9,6 +9,7 @@ import VenueImagesSection from './form/VenueImagesSection';
 import VenueAmenities from './form/VenueAmenities';
 import TurfsList from './form/TurfsList';
 import Button from '@/components/common/Button';
+import { venuesApi } from '@/lib/api';
 
 interface VenueFormProps {
   userId: string;
@@ -65,22 +66,16 @@ export default function VenueFormNew({ userId }: VenueFormProps) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/venues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          venue: { ...formData, owner_id: userId },
-          turfs: turfs.map(t => ({
-            name: t.name,
-            sport_type: t.sportType,
-            price_per_hour: parseFloat(t.pricePerHour),
-          })),
-        }),
+      const data: any = await venuesApi.create({
+        venue: { ...formData, owner_id: userId },
+        turfs: turfs.map(t => ({
+          name: t.name,
+          sport_type: t.sportType,
+          price_per_hour: parseFloat(t.pricePerHour),
+          open_time: t.openTime || '06:00',
+          close_time: t.closeTime || '22:00',
+        })),
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to create venue');
-
       router.push(`/list-venue/success?id=${data.venue.id}`);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
@@ -150,9 +145,15 @@ export default function VenueFormNew({ userId }: VenueFormProps) {
                 <div key={turf.id} className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
                   <div className="flex items-center gap-4">
                     <span className="text-gray-400">#{index + 1}</span>
-                    <div><p className="font-medium">{turf.name}</p><p className="text-sm text-gray-400 capitalize">{turf.sportType}</p></div>
+                    <div>
+                      <p className="font-medium">{turf.name}</p>
+                      <p className="text-sm text-gray-400 capitalize">{turf.sportType}</p>
+                    </div>
                   </div>
-                  <p className="font-bold text-primary">₹{turf.pricePerHour}/hr</p>
+                  <div className="text-right">
+                    <p className="font-bold text-primary">₹{turf.pricePerHour}/hr</p>
+                    <p className="text-xs text-gray-400">{turf.openTime || '06:00'} – {turf.closeTime || '22:00'}</p>
+                  </div>
                 </div>
               ))}
             </div>

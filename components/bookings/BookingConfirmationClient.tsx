@@ -13,6 +13,7 @@ import QRCodeSection from './QRCodeSection';
 import PaymentBreakdownSection from './PaymentBreakdownSection';
 import BookingActions from './BookingActions';
 import { BookingDetails, BookingConfirmationClientProps, formatDate, formatTime } from './booking-types';
+import { bookingsApi } from '@/lib/api';
 
 export default function BookingConfirmationClient({ bookingId }: BookingConfirmationClientProps) {
   const router = useRouter();
@@ -27,13 +28,7 @@ export default function BookingConfirmationClient({ bookingId }: BookingConfirma
   async function fetchBookingDetails() {
     try {
       setLoading(true);
-      const response = await fetch(`/api/bookings/${bookingId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch booking details');
-      }
-
-      const data = await response.json();
+      const data: any = await bookingsApi.getById(bookingId);
       setBooking(data.booking);
     } catch (err: any) {
       setError(err.message || 'Failed to load booking');

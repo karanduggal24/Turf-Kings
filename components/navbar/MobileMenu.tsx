@@ -9,6 +9,7 @@ interface MobileMenuProps {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
+  isOwner: boolean;
   onClose: () => void;
   onSignOut: () => void;
   onProfileClick: () => void;
@@ -21,6 +22,7 @@ export default function MobileMenu({
   user,
   loading,
   isAdmin,
+  isOwner,
   onClose,
   onSignOut,
   onProfileClick,
@@ -90,6 +92,16 @@ export default function MobileMenu({
               >
                 <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
                 <span>Admin Dashboard</span>
+              </Link>
+            )}
+            {isOwner && !isAdmin && (
+              <Link
+                href="/owner"
+                onClick={onClose}
+                className="w-full bg-primary/20 hover:bg-primary/30 border border-primary/40 text-primary px-8 py-3 rounded-full text-base font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-xl">storefront</span>
+                <span>Owner Dashboard</span>
               </Link>
             )}
             <button

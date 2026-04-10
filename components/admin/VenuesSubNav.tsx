@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { adminApi } from '@/lib/api';
 
 export default function VenuesSubNav() {
   const pathname = usePathname();
@@ -10,33 +11,18 @@ export default function VenuesSubNav() {
   const [rejectedCount, setRejectedCount] = useState(0);
 
   useEffect(() => {
-    fetchPendingCount();
-    fetchRejectedCount();
+    async function fetchCounts() {
+      try {
+        const [pending, rejected]: any[] = await Promise.all([
+          adminApi.getPendingVenues(),
+          adminApi.getRejectedVenues(),
+        ]);
+        setPendingCount(pending.venues?.length || 0);
+        setRejectedCount(rejected.venues?.length || 0);
+      } catch {}
+    }
+    fetchCounts();
   }, []);
-
-  async function fetchPendingCount() {
-    try {
-      const response = await fetch('/api/admin/pending-turfs');
-      if (response.ok) {
-        const data = await response.json();
-        setPendingCount(data.turfs?.length || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching pending count:', error);
-    }
-  }
-
-  async function fetchRejectedCount() {
-    try {
-      const response = await fetch('/api/admin/rejected-turfs');
-      if (response.ok) {
-        const data = await response.json();
-        setRejectedCount(data.turfs?.length || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching rejected count:', error);
-    }
-  }
 
   const isAllVenues = pathname === '/admin/venues';
   const isPendingRequests = pathname === '/admin/venues/requests';

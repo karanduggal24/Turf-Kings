@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { turfsMetadata } from '@/lib/metadata';
 
 export const metadata = turfsMetadata;
+export const revalidate = 60; // Revalidate every 60 seconds so ratings stay fresh
 
 export default async function TurfsPage() {
   const supabase = await createServerSupabaseClient();

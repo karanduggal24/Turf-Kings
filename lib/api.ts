@@ -118,6 +118,15 @@ export const filtersApi = {
   getAmenities: () => request('/amenities'),
 };
 
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export const reviewsApi = {
+  getByVenue: (venueId: string, page = 1) =>
+    request(`/reviews?venue_id=${venueId}&page=${page}`),
+  submit: (data: { booking_id: string; rating: number; comment?: string }) =>
+    request('/reviews', { method: 'POST', auth: true, body: JSON.stringify(data) }),
+};
+
 // ─── Upload ───────────────────────────────────────────────────────────────────
 
 export const uploadApi = {

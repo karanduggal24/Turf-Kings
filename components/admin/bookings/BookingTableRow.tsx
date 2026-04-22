@@ -42,6 +42,7 @@ const PAYMENT_STATUS_STYLES: Record<string, { bg: string; text: string; border: 
   paid: { bg: 'bg-primary/20', text: 'text-primary', border: 'border-primary/30' },
   failed: { bg: 'bg-red-500/20', text: 'text-red-500', border: 'border-red-500/30' },
   refunded: { bg: 'bg-red-500/20', text: 'text-red-500', border: 'border-red-500/30' },
+  cancelled: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/30' },
 };
 
 export default function BookingTableRow({
@@ -68,7 +69,10 @@ export default function BookingTableRow({
       .slice(0, 2);
   };
 
-  const statusStyle = PAYMENT_STATUS_STYLES[booking.payment_status] || PAYMENT_STATUS_STYLES.pending;
+  const statusStyle = PAYMENT_STATUS_STYLES[booking.status === 'cancelled' ? 'cancelled' : booking.payment_status] || PAYMENT_STATUS_STYLES.pending;
+  const displayLabel = booking.status === 'cancelled'
+    ? 'Cancelled'
+    : booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1);
   const sportColor = SPORT_COLORS[booking.turf?.sport_type || ''] || 'bg-gray-500';
 
   return (
@@ -107,12 +111,12 @@ export default function BookingTableRow({
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} border ${statusStyle.border}`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.text.replace('text-', 'bg-')} mr-1.5 ${booking.payment_status === 'paid' ? 'animate-pulse' : ''}`}></span>
-          {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
+          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.text.replace('text-', 'bg-')} mr-1.5`}></span>
+          {displayLabel}
         </span>
       </td>
       <td className="px-6 py-4 text-right">
-        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-end gap-2">
           <button 
             onClick={() => onViewBooking(booking.id)}
             className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded transition-all"

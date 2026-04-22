@@ -22,31 +22,38 @@ const ITEMS_PER_PAGE = 9;
 export default function TurfsGrid({ initialTurfs, initialError, filters }: TurfsGridProps) {
   const [sortBy, setSortBy] = useState('rating');
   const [currentPage, setCurrentPage] = useState(1);
+  const [liveRatings, setLiveRatings] = useState<Record<string, { rating: number; total_reviews: number }>>({});
   const { turfs, setTurfs, loading } = useTurfsStore();
 
   useEffect(() => {
-    if (initialTurfs.length > 0) {
-      setTurfs(initialTurfs);
-    }
+    if (initialTurfs.length > 0) setTurfs(initialTurfs);
   }, [initialTurfs, setTurfs]);
 
+  // Fetch live ratings once on mount
   useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+    fetch('/api/venues/ratings')
+      .then(r => r.json())
+      .then(data => { if (data.ratings) setLiveRatings(data.ratings); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => { setCurrentPage(1); }, [filters]);
 
   const handleSortChange = (newSort: string) => {
     setSortBy(newSort);
     setCurrentPage(1);
   };
 
-  const allTurfs = turfs.length > 0 ? turfs : initialTurfs;
+  // Merge live ratings into turfs
+  const allTurfs = (turfs.length > 0 ? turfs : initialTurfs).map(turf => {
+    const live = liveRatings[(turf as any).id];
+    if (!live) return turf;
+    return { ...turf, rating: live.rating, total_reviews: live.total_reviews } as Turf;
+  });
+
   const filteredTurfs = useTurfFilters(allTurfs, filters);
   const sortedTurfs = useTurfSort(filteredTurfs, sortBy);
-  const { paginatedItems, totalPages, startIndex, endIndex } = usePagination(
-    sortedTurfs,
-    currentPage,
-    ITEMS_PER_PAGE
-  );
+  const { paginatedItems, totalPages, startIndex, endIndex } = usePagination(sortedTurfs, currentPage, ITEMS_PER_PAGE);
 
   return (
     <section className="flex-1">
@@ -58,19 +65,9 @@ export default function TurfsGrid({ initialTurfs, initialError, filters }: Turfs
         sortBy={sortBy}
         onSortChange={handleSortChange}
       />
-
-      <TurfsGridContent
-        turfs={paginatedItems}
-        loading={loading}
-        error={initialError}
-      />
-
+      <TurfsGridContent turfs={paginatedItems} loading={loading} error={initialError} />
       {!loading && (
-        <TurfsGridPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+        <TurfsGridPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       )}
     </section>
   );

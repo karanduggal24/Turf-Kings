@@ -7,6 +7,7 @@ import VenueHeader from './detail/VenueHeader';
 import VenueTurfsList from './detail/VenueTurfsList';
 import VenueAmenitiesSidebar from './detail/VenueAmenitiesSidebar';
 import VenueLocationMap from './detail/VenueLocationMap';
+import VenueReviews from './detail/VenueReviews';
 
 interface VenueDetailClientProps {
   venue: any;
@@ -14,6 +15,8 @@ interface VenueDetailClientProps {
 
 export default function VenueDetailClient({ venue }: VenueDetailClientProps) {
   const [selectedSport, setSelectedSport] = useState<string>('all');
+  const [liveRating, setLiveRating] = useState<number | undefined>(undefined);
+  const [liveReviews, setLiveReviews] = useState<number | undefined>(undefined);
   
   // Get unique sports from turfs
   const availableSports = Array.from(new Set(venue.turfs?.map((t: any) => t.sport_type as string) || [])) as string[];
@@ -26,7 +29,7 @@ export default function VenueDetailClient({ venue }: VenueDetailClientProps) {
   return (
     <main className="flex-1 bg-black">
       {/* Hero Header with Image */}
-      <VenueHeader venue={venue} />
+      <VenueHeader venue={venue} liveRating={liveRating} liveReviews={liveReviews} />
 
       {/* Main Content */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-10 lg:px-20 py-8">
@@ -93,6 +96,14 @@ export default function VenueDetailClient({ venue }: VenueDetailClientProps) {
               phone={venue.phone}
             />
           </div>
+        </div>
+
+        {/* Reviews */}
+        <div className="mt-8">
+          <VenueReviews
+            venueId={venue.id}
+            onStatsChange={(avg, total) => { setLiveRating(avg); setLiveReviews(total); }}
+          />
         </div>
       </div>
     </main>

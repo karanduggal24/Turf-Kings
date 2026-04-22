@@ -12,6 +12,7 @@ import UserDetailsSection from './UserDetailsSection';
 import QRCodeSection from './QRCodeSection';
 import PaymentBreakdownSection from './PaymentBreakdownSection';
 import BookingActions from './BookingActions';
+import ReviewForm from './ReviewForm';
 import { BookingDetails, BookingConfirmationClientProps, formatDate, formatTime } from './booking-types';
 import { bookingsApi } from '@/lib/api';
 
@@ -20,6 +21,7 @@ export default function BookingConfirmationClient({ bookingId }: BookingConfirma
   const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reviewed, setReviewed] = useState(false);
 
   useEffect(() => {
     fetchBookingDetails();
@@ -123,6 +125,27 @@ export default function BookingConfirmationClient({ bookingId }: BookingConfirma
           </div>
 
           <BookingActions />
+
+          {/* Review section — only for confirmed/completed bookings */}
+          {(booking.status === 'confirmed' || booking.status === 'completed') && (
+            <div className="mt-8 no-print">
+              {reviewed ? (
+                <div className="flex items-center gap-3 bg-primary/10 border border-primary/30 rounded-xl p-5">
+                  <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
+                  <div>
+                    <p className="font-bold text-primary">Review submitted!</p>
+                    <p className="text-sm text-gray-400 mt-0.5">Thank you for sharing your experience.</p>
+                  </div>
+                </div>
+              ) : (
+                <ReviewForm
+                  bookingId={booking.id}
+                  venueName={booking.venue.name}
+                  onSubmitted={() => setReviewed(true)}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
 

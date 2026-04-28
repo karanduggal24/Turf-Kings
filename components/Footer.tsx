@@ -35,17 +35,17 @@ export default function Footer() {
             <h5 className="text-white font-bold mb-6">Explore</h5>
             <ul className="space-y-4">
               <li>
-                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="#">
+                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="/turfs">
                   Book a Turf
                 </a>
               </li>
               <li>
-                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="#">
+                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="/turfs">
                   Tournaments
                 </a>
               </li>
               <li>
-                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="#">
+                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="/become-owner">
                   Partner with us
                 </a>
               </li>
@@ -56,17 +56,17 @@ export default function Footer() {
             <h5 className="text-white font-bold mb-6">Company</h5>
             <ul className="space-y-4">
               <li>
-                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="#">
+                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="/about">
                   About Us
                 </a>
               </li>
               <li>
-                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="#">
+                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="contact">
                   Contact
                 </a>
               </li>
               <li>
-                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="#">
+                <a className="text-gray-400 hover:text-neon-green text-sm transition-colors" href="/terms">
                   Terms of Service
                 </a>
               </li>

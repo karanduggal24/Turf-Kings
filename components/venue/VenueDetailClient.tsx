@@ -88,7 +88,7 @@ export default function VenueDetailClient({ venue }: VenueDetailClientProps) {
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
-            <VenueAmenitiesSidebar amenities={venue.amenities || []} />
+            <VenueAmenitiesSidebar amenities={venue.amenities || []} phone={venue.phone} />
             <VenueLocationMap 
               location={venue.location}
               city={venue.city}

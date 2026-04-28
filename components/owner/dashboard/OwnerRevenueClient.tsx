@@ -203,7 +203,9 @@ export default function OwnerRevenueClient() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#111', border: '1px solid #ffffff20', borderRadius: '8px', color: '#fff' }}
+                      contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px', color: '#111' }}
+                      labelStyle={{ color: '#111', fontWeight: 600 }}
+                      itemStyle={{ color: '#111' }}
                       formatter={(v, name) => [v, String(name).charAt(0).toUpperCase() + String(name).slice(1)]}
                     />
                   </PieChart>

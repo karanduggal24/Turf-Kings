@@ -125,6 +125,8 @@ export const reviewsApi = {
     request(`/reviews?venue_id=${venueId}&page=${page}`),
   submit: (data: { booking_id: string; rating: number; comment?: string }) =>
     request('/reviews', { method: 'POST', auth: true, body: JSON.stringify(data) }),
+  getLiveRatings: () =>
+    request('/venues/ratings'),
 };
 
 // ─── Upload ───────────────────────────────────────────────────────────────────

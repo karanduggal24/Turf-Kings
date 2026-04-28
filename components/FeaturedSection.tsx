@@ -5,21 +5,14 @@ import { useTurfsStore } from '@/stores/turfsStore';
 import TurfCard from './TurfCard';
 import { TurfCardProps } from '@/app/constants/types';
 import Link from 'next/link';
+import { reviewsApi } from '@/lib/api';
 
-// Helper function to get sport icon
 const getSportIcon = (sportType: string): string => {
-  switch (sportType) {
-    case 'cricket':
-      return 'sports_cricket';
-    case 'football':
-      return 'sports_soccer';
-    case 'badminton':
-      return 'sports_tennis';
-    case 'multi':
-      return 'sports';
-    default:
-      return 'sports';
-  }
+  const icons: Record<string, string> = {
+    cricket: 'sports_cricket', football: 'sports_soccer',
+    badminton: 'sports_tennis', multi: 'sports',
+  };
+  return icons[sportType] || 'sports';
 };
 
 // Helper function to convert database venue to TurfCard props
@@ -51,104 +44,12 @@ const convertTurfToCardProps = (venue: any): TurfCardProps & {
 // Mobile Carousel Component
 function MobileCarousel({ turfs }: { turfs: any[] }) {
   return (
-    <div className="relative">
-      <div 
-        className="flex gap-4 overflow-x-auto scrollbar-hide pb-8"
-        style={{ 
-          scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehaviorX: 'contain'
-        }}
-      >
-        {turfs.map((venue) => (
-          <Link 
-            key={venue.id}
-            href={`/turfs/${venue.id}`}
-            className="shrink-0 w-72 h-[420px] block"
-            style={{ scrollSnapAlign: 'start' }}
-          >
-            <div className="w-full h-full">
-              <div className="group bg-surface-dark rounded-2xl overflow-hidden hover:shadow-neon-lg transition-all duration-300 border border-surface-highlight hover:border-primary h-full flex flex-col">
-                <div className="relative aspect-4/3 w-full overflow-hidden shrink-0">
-                  <div className="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 border border-surface-highlight">
-                    <span className="material-symbols-outlined text-primary text-xs">{getSportIcon(venue.sport_type)}</span>
-                    <span className="text-white text-xs font-bold uppercase tracking-wide">
-                      {venue.sport_type.charAt(0).toUpperCase() + venue.sport_type.slice(1)}
-                    </span>
-                  </div>
-                  
-                  {/* Turf Count Badge */}
-                  {venue.total_turfs && venue.total_turfs > 0 && (
-                    <div className="absolute top-3 right-3 z-10 bg-primary/90 backdrop-blur-md px-2 py-1 rounded-full border border-primary">
-                      <span className="text-black text-xs font-bold">{venue.total_turfs} Turf{venue.total_turfs !== 1 ? 's' : ''}</span>
-                    </div>
-                  )}
-                  
-                  <div 
-                    className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" 
-                    style={{ backgroundImage: `url('${venue.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800'}')` }}
-                  ></div>
-                  <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1">
-                    <span className="material-symbols-outlined text-yellow-400 text-xs">star</span>
-                    <span className="text-white text-xs font-bold">{venue.rating || 0}</span>
-                  </div>
-                </div>
-                
-                <div className="p-4 flex flex-col grow min-h-0">
-                  <div className="mb-3">
-                    <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{venue.name}</h3>
-                    <p className="text-gray-400 text-xs flex items-center gap-1 mt-1 line-clamp-1">
-                      <span className="material-symbols-outlined text-xs">near_me</span> 
-                      {venue.city}, {venue.state} • {venue.location}
-                    </p>
-                  </div>
-                  
-                  {/* Available Sports */}
-                  {venue.available_sports && venue.available_sports.length > 0 ? (
-                    <div className="mb-4 flex items-center gap-1 overflow-hidden flex-wrap">
-                      {venue.available_sports.slice(0, 2).map((sport: string, index: number) => (
-                        <span key={index} className="flex items-center gap-1 px-2 py-1 bg-surface-highlight rounded-md text-xs text-gray-300 font-medium border border-surface-highlight whitespace-nowrap">
-                          <span className="material-symbols-outlined text-xs text-primary">{getSportIcon(sport)}</span>
-                          <span className="capitalize">{sport}</span>
-                        </span>
-                      ))}
-                      {venue.available_sports.length > 2 && (
-                        <span className="text-xs text-gray-400">+{venue.available_sports.length - 2}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="mb-4 flex items-center gap-1 overflow-hidden flex-wrap">
-                      {(venue.amenities?.slice(0, 2) || []).map((amenity: string, index: number) => (
-                        <span key={index} className="px-2 py-1 bg-surface-highlight rounded-md text-xs text-gray-300 font-medium border border-surface-highlight whitespace-nowrap">
-                          {amenity}
-                        </span>
-                      ))}
-                      {venue.amenities?.length > 2 && (
-                        <span className="text-xs text-gray-400">+{venue.amenities.length - 2}</span>
-                      )}
-                    </div>
-                  )}
-                  
-                  <div className="pt-3 border-t border-surface-highlight flex items-center justify-between mt-auto">
-                    <div>
-                      <p className="text-gray-400 text-xs">Starting from</p>
-                      <p className="text-white font-bold text-sm">
-                        {venue.min_price && venue.max_price && venue.min_price !== venue.max_price 
-                          ? `₹${venue.min_price} - ₹${venue.max_price}`
-                          : `₹${venue.price_per_hour}`
-                        }<span className="text-xs font-normal text-gray-400">/hr</span>
-                      </p>
-                    </div>
-                    <span className="bg-primary hover:bg-primary-hover text-black px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 neon-glow-hover">
-                      Book Now
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 items-stretch" style={{ scrollSnapType: 'x mandatory' }}>
+      {turfs.map(venue => (
+        <div key={venue.id} className="shrink-0 w-[280px]" style={{ scrollSnapAlign: 'start' }}>
+          <TurfCard {...convertTurfToCardProps(venue)} />
+        </div>
+      ))}
     </div>
   );
 }
@@ -159,7 +60,6 @@ interface FeaturedSectionProps {
 }
 
 export default function FeaturedSection({ initialTurfs, initialError }: FeaturedSectionProps) {
-  // Initialize with server data (no loading state on first render!)
   const [turfs, setTurfs] = useState(initialTurfs);
   const [currentError, setCurrentError] = useState(initialError);
   const [isRefetching, setIsRefetching] = useState(false);
@@ -175,6 +75,20 @@ export default function FeaturedSection({ initialTurfs, initialError }: Featured
       });
     }
   }, [initialTurfs, initialError]);
+
+  // Fetch live ratings and merge into turfs
+  useEffect(() => {
+    reviewsApi.getLiveRatings()
+      .then((data: any) => {
+        if (!data.ratings) return;
+        setTurfs(prev => prev.map(venue => {
+          const live = data.ratings[(venue as any).id];
+          if (!live) return venue;
+          return { ...venue, rating: live.rating, total_reviews: live.total_reviews };
+        }));
+      })
+      .catch(() => {});
+  }, []);
 
   // Function to refetch data (for filters, refresh, etc.)
   const handleRefetch = async (filters?: any) => {

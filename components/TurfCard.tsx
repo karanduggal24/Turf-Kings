@@ -121,7 +121,7 @@ export default function TurfCard({
 
   if (turfId) {
     return (
-      <Link href={`/turfs/${turfId}`} className="block">
+      <Link href={`/turfs/${turfId}`} className="block h-full">
         {CardContent}
       </Link>
     );

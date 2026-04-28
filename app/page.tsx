@@ -7,6 +7,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { homeMetadata } from '@/lib/metadata';
 
 export const metadata = homeMetadata;
+export const revalidate = 60;
 
 export default async function Home() {
   const supabase = await createServerSupabaseClient();

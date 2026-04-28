@@ -65,20 +65,20 @@ export default function VenueReviews({ venueId, onStatsChange }: VenueReviewsPro
   }, [venueId, page]);
 
   return (
-    <div className="bg-surface-dark border border-surface-highlight rounded-xl p-6">
-      <div className="flex items-start justify-between mb-6">
+    <div className="bg-surface-dark border border-surface-highlight rounded-xl p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <span className="material-symbols-outlined text-primary">reviews</span>
           Reviews
           {total > 0 && <span className="text-sm font-normal text-gray-400">({total})</span>}
         </h2>
         {total > 0 && (
-          <div className="text-right">
-            <div className="flex items-center gap-2 justify-end">
-              <Stars rating={avgRating} size="lg" />
+          <div className="flex items-center gap-3">
+            <Stars rating={avgRating} size="lg" />
+            <div>
               <span className="text-2xl font-black text-white">{avgRating.toFixed(1)}</span>
+              <p className="text-xs text-gray-400">{total} review{total !== 1 ? 's' : ''}</p>
             </div>
-            <p className="text-xs text-gray-400 mt-0.5">{total} review{total !== 1 ? 's' : ''}</p>
           </div>
         )}
       </div>
@@ -98,7 +98,7 @@ export default function VenueReviews({ venueId, onStatsChange }: VenueReviewsPro
         <div className="space-y-5">
           {reviews.map(review => (
             <div key={review.id} className="border-b border-surface-highlight pb-5 last:border-0 last:pb-0">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
                     {(review.user?.full_name || 'U')[0].toUpperCase()}

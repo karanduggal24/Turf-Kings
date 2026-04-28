@@ -10,6 +10,7 @@ import TurfsGridPagination from './TurfsGridPagination';
 import { useTurfFilters } from './hooks/useTurfFilters';
 import { useTurfSort } from './hooks/useTurfSort';
 import { usePagination } from './hooks/usePagination';
+import { reviewsApi } from '@/lib/api';
 
 interface TurfsGridProps {
   initialTurfs: Turf[];
@@ -31,9 +32,8 @@ export default function TurfsGrid({ initialTurfs, initialError, filters }: Turfs
 
   // Fetch live ratings once on mount
   useEffect(() => {
-    fetch('/api/venues/ratings')
-      .then(r => r.json())
-      .then(data => { if (data.ratings) setLiveRatings(data.ratings); })
+    reviewsApi.getLiveRatings()
+      .then((data: any) => { if (data.ratings) setLiveRatings(data.ratings); })
       .catch(() => {});
   }, []);
 

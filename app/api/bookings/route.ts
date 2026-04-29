@@ -140,66 +140,41 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data: existingBookings, error: checkError } = await serviceSupabase
-      .from('bookings_new')
-      .select('id, start_time, end_time, status')
-      .eq('turf_id', turf_id)
-      .eq('booking_date', booking_date)
-      .neq('status', 'cancelled');
-
-    if (checkError) {
-      return NextResponse.json({ error: checkError.message }, { status: 400 })
-    }
-
-    // Check for actual overlaps
-    if (existingBookings && existingBookings.length > 0) {
-      const hasOverlap = existingBookings.some((booking: any) => {
-        // Normalize times to HH:MM format for comparison
-        const existingStart = booking.start_time.substring(0, 5);
-        const existingEnd = booking.end_time.substring(0, 5);
-        const newStart = start_time.substring(0, 5);
-        const newEnd = end_time.substring(0, 5);
-        
-        // Overlap occurs if:
-        // - New booking starts before existing ends AND
-        // - New booking ends after existing starts
-        const overlaps = newStart < existingEnd && newEnd > existingStart;
-        
-        return overlaps;
+    // Call the atomic Supabase RPC to prevent race conditions
+    const { data: newBookingId, error: rpcError } = await serviceSupabase
+      .rpc('create_booking_atomic', {
+        p_user_id: user.id,
+        p_turf_id: turf_id,
+        p_venue_id: body.venue_id,
+        p_booking_date: booking_date,
+        p_start_time: start_time.substring(0, 5),
+        p_end_time: end_time.substring(0, 5),
+        p_total_amount: total_amount,
+        p_notes: notes || null
       });
 
-      if (hasOverlap) {
-        return NextResponse.json(
-          { error: 'Time slot is already booked' },
-          { status: 409 }
-        );
+    if (rpcError) {
+      // Check if the RPC threw our custom overlap exception
+      if (rpcError.message.includes('Time slot is already booked')) {
+        return NextResponse.json({ error: 'Time slot is already booked' }, { status: 409 });
       }
+      return NextResponse.json({ error: rpcError.message }, { status: 400 });
     }
 
-    const { data: booking, error } = await serviceSupabase
+    // Now that the booking is safely created, fetch the full joined data to return
+    const { data: booking, error: fetchError } = await serviceSupabase
       .from('bookings_new')
-      .insert({
-        user_id: user.id,
-        turf_id,
-        venue_id: body.venue_id,
-        booking_date,
-        start_time,
-        end_time,
-        total_amount,
-        status: 'confirmed',
-        payment_status: 'paid',
-        notes
-      })
       .select(`
         *,
         turf:turfs_new(id, name, sport_type, price_per_hour),
         venue:venues(name, location, city, state, phone),
         user:users(full_name, email, phone)
       `)
-      .single()
+      .eq('id', newBookingId)
+      .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 400 })
     }
 
     return NextResponse.json({ booking }, { status: 201 })
